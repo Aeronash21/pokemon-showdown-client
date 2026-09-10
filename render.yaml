@@ -1,0 +1,22 @@
+services:
+  - type: web
+    runtime: static
+    name: nd-shared-power-client
+    buildCommand: >-
+      npm ci &&
+      mkdir -p
+      play.pokemonshowdown.com/data
+      play.pokemonshowdown.com/js
+      play.pokemonshowdown.com/js/server
+      play.pokemonshowdown.com/caches
+      replay.pokemonshowdown.com/js
+      replay.pokemonshowdown.com/caches
+      teams.pokemonshowdown.com/js
+      teams.pokemonshowdown.com/caches &&
+      cp config/config-example.js config/config.js &&
+      node build indexes &&
+      node build &&
+      cp play.pokemonshowdown.com/caches/index-new.html
+      play.pokemonshowdown.com/index.html
+    staticPublishPath: ./play.pokemonshowdown.com
+    autoDeploy: true

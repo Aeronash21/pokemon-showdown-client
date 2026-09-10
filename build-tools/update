@@ -242,9 +242,7 @@ let stdout = '';
 let newsid = 0;
 let news = '[failed to retrieve news]';
 try {
-	stdout = child_process.execSync('php build-tools/news-embed.php', {
-		stdio: 'pipe',
-	});
+	stdout = ''; // Hosted ND Shared Power client: skip optional PHP news embed
 } catch (e) {
 	console.log("git hook failed to retrieve news (exec command failed):\n" + (e.error + e.stderr + e.stdout));
 }
