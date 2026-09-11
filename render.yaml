@@ -16,7 +16,7 @@ services:
       cp config/config-example.js config/config.js &&
       node build indexes &&
       node build &&
-      cp play.pokemonshowdown.com/caches/index-new.html
+      cp render-index.html
       play.pokemonshowdown.com/index.html
     staticPublishPath: ./play.pokemonshowdown.com
     autoDeploy: true
