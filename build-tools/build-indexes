@@ -13,7 +13,12 @@ if (!fs.existsSync('caches/pokemon-showdown')) {
 }
 
 process.stdout.write("Syncing data from Git repository... ");
-child_process.execSync('git pull', { cwd: 'caches/pokemon-showdown' });
+child_process.execSync('git fetch origin master', {
+	cwd: 'caches/pokemon-showdown',
+});
+child_process.execSync('git checkout -B master origin/master', {
+	cwd: 'caches/pokemon-showdown',
+});
 child_process.execSync('npm run build', { cwd: 'caches/pokemon-showdown' });
 console.log("DONE");
 

@@ -4,6 +4,7 @@ services:
     name: nd-shared-power-client
     buildCommand: >-
       npm ci &&
+      rm -rf caches/pokemon-showdown &&
       mkdir -p
       play.pokemonshowdown.com/data
       play.pokemonshowdown.com/js
