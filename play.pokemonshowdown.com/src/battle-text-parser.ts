@@ -1626,7 +1626,10 @@ export class BattleTextParser {
 			let template = this.template(templateId, id);
 			const side = pokemon.slice(0, 2);
 			const pokemonName = this.pokemon(pokemon);
-			if (cmd === '-mega') {
+			if (cmd === '-mega' && item === 'Max Mushrooms') {
+				// PokeRogue formats: Gigantamaxing works like Mega Evolution
+				template = `\n  {POKEMON}'s {ITEM} are reacting to the Key Stone!\n{POKEMON} Gigantamaxed!\n`;
+			} else if (cmd === '-mega') {
 				template += this.template('transformMega');
 			}
 			return this.render(template, {

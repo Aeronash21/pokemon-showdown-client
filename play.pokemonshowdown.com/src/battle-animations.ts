@@ -2876,6 +2876,12 @@ export class PokemonSprite extends Sprite {
 		}
 
 		for (let i in pokemon.volatiles) {
+			if (i === 'passive') {
+				// PokeRogue formats: show the passive ability
+				const passive = String(pokemon.volatiles[i][1] || '').replace(/[<>&"]/g, '');
+				if (passive) status += `<span class="neutral">Passive:&nbsp;${passive.replace(/ /g, '&nbsp;')}</span> `;
+				continue;
+			}
 			status += PokemonSprite.getEffectTag(i);
 		}
 		for (let i in pokemon.turnstatuses) {

@@ -1051,6 +1051,19 @@ export class BattleTooltips {
 			text += '</p>';
 		}
 
+		// PokeRogue formats: the passive ability
+		if (this.battle.tier?.includes('PokeRogue')) {
+			let passive = '';
+			if (serverPokemon && 'passive' in serverPokemon) {
+				passive = (serverPokemon as any).passive || '';
+			} else if (clientPokemon?.volatiles.passive) {
+				passive = clientPokemon.volatiles.passive[1];
+			}
+			if (passive) {
+				text += `<p><small>Passive:</small> ${String(passive).replace(/[<>&"]/g, '')}</p>`;
+			}
+		}
+
 		// Only display when you don't also have stats
 		if (clientPokemon?.nature && !serverPokemon) {
 			const nature = TL.nature[toID(clientPokemon.nature)] || clientPokemon.nature;

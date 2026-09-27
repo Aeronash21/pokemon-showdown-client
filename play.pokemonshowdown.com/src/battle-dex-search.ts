@@ -674,8 +674,10 @@ abstract class BattleTypedSearch<T extends SearchType> {
 
 	protected formatType: 'doubles' | 'bdsp' | 'bdspdoubles' | 'rs' | 'frlg' | 'bw1' | 'letsgo' | 'metronome' | 'natdex' |
 		'nfe' | 'ssdlc1' | 'ssdlc1doubles' | 'predlc' | 'predlcdoubles' | 'svdlc1' | 'svdlc1doubles' | 'stadium' | 'lc' |
-		'champions' | 'natdexchampions' | null = null;
+		'champions' | 'natdexchampions' | 'pokerogue' | null = null;
 	isDoubles = false;
+	/** PokeRogue formats: the format id without "gen9" (e.g. `pokerogueou`), for its banlist. */
+	pokeRogueFormat = '' as ID;
 
 	/**
 	 * Cached copy of what the results list would be with only base filters
@@ -705,6 +707,7 @@ abstract class BattleTypedSearch<T extends SearchType> {
 		} else if (!format) {
 			this.dex = Dex;
 		}
+		const pokeRogueFormat = format.startsWith('pokerogue') && BattleTeambuilderTable?.['pokerogue'] ? format : '';
 
 		if (format.startsWith('dlc1') && this.dex.gen === 8) {
 			if (format.includes('doubles')) {
@@ -813,6 +816,14 @@ abstract class BattleTypedSearch<T extends SearchType> {
 		if (format.endsWith('draft')) {
 			format = format.slice(0, -5) as ID;
 			if (!format) format = 'anythinggoes' as ID;
+		}
+		if (pokeRogueFormat) {
+			// PokeRogue OU / Ubers / AG / VGC / VGC Restricted / Random Battle
+			this.formatType = 'pokerogue';
+			this.dex = Dex.mod('pokerogue' as ID);
+			this.pokeRogueFormat = pokeRogueFormat;
+			format = (pokeRogueFormat.slice(9) || 'ou') as ID;
+			this.isDoubles = format.startsWith('vgc');
 		}
 		this.format = format;
 
@@ -949,8 +960,51 @@ abstract class BattleTypedSearch<T extends SearchType> {
 
 		return '' as ID;
 	}
+	/**
+	 * PokeRogue: the species id whose PokeRogue data (move list, egg moves,
+	 * passive) a Pokemon uses. Battle-only forms use the form they start from.
+	 */
+	pokeRogueID(speciesid: ID): ID {
+		const table = BattleTeambuilderTable['pokerogue'];
+		let species = this.dex.species.get(speciesid);
+		for (let i = 0; species.exists && i < 4; i++) {
+			if (species.id in table.learnsets) return species.id;
+			const from = species.battleOnly || species.changesFrom || species.baseSpecies;
+			const next = this.dex.species.get(Array.isArray(from) ? from[0] : from);
+			if (!next.exists || next.id === species.id) break;
+			species = next;
+		}
+		return '' as ID;
+	}
+	/** PokeRogue: every move a species can have. */
+	pokeRogueMoves(speciesid: ID): Set<ID> {
+		const table = BattleTeambuilderTable['pokerogue'];
+		const id = this.pokeRogueID(speciesid);
+		if (!table.decodedLearnsets) table.decodedLearnsets = {};
+		if (!table.decodedLearnsets[id]) {
+			const moves = new Set<ID>();
+			const codes: string = table.learnsets[id] || '';
+			for (let i = 0; i < codes.length; i += 2) {
+				moves.add(table.moveIds[parseInt(codes.slice(i, i + 2), 36)]);
+			}
+			table.decodedLearnsets[id] = moves;
+		}
+		return table.decodedLearnsets[id];
+	}
+	/** PokeRogue: a species' four egg moves; the 4th is the rare egg move. */
+	pokeRogueEggMoves(speciesid: ID): ID[] {
+		return BattleTeambuilderTable['pokerogue'].eggMoves[this.pokeRogueID(speciesid)] || [];
+	}
+	protected pokeRogueCanSketch(move: Dex.Move) {
+		return move.exists && !move.flags['nosketch'] && !move.isMax && !move.isZ &&
+			(!move.isNonstandard || move.isNonstandard === 'Past');
+	}
 	protected canLearn(speciesid: ID, moveid: ID) {
 		const move = this.dex.moves.get(moveid);
+		if (this.formatType === 'pokerogue') {
+			const moves = this.pokeRogueMoves(speciesid);
+			return moves.has(move.id) || (moves.has('sketch' as ID) && this.pokeRogueCanSketch(move));
+		}
 		if (this.formatType?.includes('natdex') && move.isNonstandard && move.isNonstandard !== 'Past') {
 			return false;
 		}
@@ -1021,6 +1075,7 @@ abstract class BattleTypedSearch<T extends SearchType> {
 			this.formatType === 'stadium' ? `gen${gen}stadium${gen > 1 ? gen : ''}` :
 			this.formatType === 'champions' ? `champions` :
 			this.formatType === 'natdexchampions' ? `natdexchampions` :
+			this.formatType === 'pokerogue' ? `pokerogue` :
 			`gen${gen}`;
 		if (table?.[tableKey]) {
 			table = table[tableKey];
@@ -1111,6 +1166,7 @@ class BattlePokemonSearch extends BattleTypedSearch<'pokemon'> {
 	getBaseResults(): SearchRow[] {
 		const format = this.format;
 		if (!format) return this.getDefaultResults();
+		if (this.formatType === 'pokerogue') return this.getPokeRogueResults();
 		const isVGCOrBS = format.startsWith('battlespot') || format.startsWith('bss') ||
 			format.startsWith('battlestadium') || format.startsWith('vgc');
 		const isHackmons = format.includes('hackmons') || format.endsWith('bh');
@@ -1338,6 +1394,26 @@ class BattlePokemonSearch extends BattleTypedSearch<'pokemon'> {
 
 		return tierSet;
 	}
+	/** PokeRogue: every PokeRogue Pokemon by tier, minus the format's bans. */
+	getPokeRogueResults(): SearchRow[] {
+		const table = BattleTeambuilderTable['pokerogue'];
+		if (!table.tierSet) {
+			table.tierSet = table.tiers.map((r: any) => {
+				if (typeof r === 'string') return ['pokemon', r];
+				return [r[0], r[1]];
+			});
+			table.tiers = null;
+		}
+		const bans: { [id: string]: 1 } = table.metagameBans?.[this.pokeRogueFormat] || {};
+		const results: SearchRow[] = [];
+		for (const row of table.tierSet as SearchRow[]) {
+			if (row[0] === 'pokemon' && row[1] in bans) continue;
+			if (row[0] === 'header' && results.length && results[results.length - 1][0] === 'header') results.pop();
+			results.push(row);
+		}
+		if (results.length && results[results.length - 1][0] === 'header') results.pop();
+		return results;
+	}
 	filter(row: SearchRow, filters: string[][]) {
 		if (!filters) return true;
 		if (row[0] !== 'pokemon') return true;
@@ -1413,6 +1489,16 @@ class BattleAbilitySearch extends BattleTypedSearch<'ability'> {
 		const dex = this.dex;
 		let species = dex.species.get(this.species);
 		let abilitySet: SearchRow[] = [['header', TL`Abilities`]];
+
+		if (this.formatType === 'pokerogue') {
+			const passives = BattleTeambuilderTable['pokerogue'].passives;
+			const passive = passives[species.id] || passives[this.pokeRogueID(species.id)];
+			if (passive) {
+				const off = this.set?.passive === false;
+				abilitySet.unshift(['html', `Passive: <strong>${passive.replace(/[<>&"]/g, '')}</strong>` +
+					(off ? ` <em>(turned off)</em>` : ` <small>(always active; turn it off in Details)</small>`)]);
+			}
+		}
 
 		if (species.isMega) {
 			abilitySet.unshift(['html', `Will be <strong>${species.abilities['0']}</strong> after Mega Evolving.`]);
@@ -1505,6 +1591,8 @@ class BattleItemSearch extends BattleTypedSearch<'item'> {
 			table = table[`champions`];
 		} else if (this.formatType === 'natdexchampions') {
 			table = table[`natdexchampions`];
+		} else if (this.formatType === 'pokerogue') {
+			table = table[`pokerogue`];
 		} else if (this.dex.gen < 9) {
 			table = table[`gen${this.dex.gen}`];
 		}
@@ -1869,8 +1957,61 @@ class BattleMoveSearch extends BattleTypedSearch<'move'> {
 	static readonly GOOD_DOUBLES_MOVES = [
 		'allyswitch', 'bulldoze', 'coaching', 'electroweb', 'faketears', 'fling', 'followme', 'healpulse', 'helpinghand', 'junglehealing', 'lifedew', 'lunarblessing', 'muddywater', 'pollenpuff', 'psychup', 'ragepowder', 'safeguard', 'skillswap', 'snipeshot', 'wideguard', 'decorate', 'snarl',
 	] as ID[] as readonly ID[];
+	/**
+	 * PokeRogue: the Pokemon's egg moves first (the 4th is the rare one),
+	 * then the rest of its PokeRogue move list.
+	 */
+	getPokeRogueResults(): SearchRow[] {
+		const species = this.dex.species.get(this.species);
+		const learnable = this.pokeRogueMoves(species.id);
+		const eggMoves = this.pokeRogueEggMoves(species.id).filter(id => learnable.has(id));
+		const moves = [...learnable].filter(id => !eggMoves.includes(id)).sort();
+		const sketchMoves: ID[] = [];
+		if (learnable.has('sketch' as ID)) {
+			for (const id in BattleMovedex) {
+				const move = this.dex.moves.get(id);
+				if (!learnable.has(move.id) && this.pokeRogueCanSketch(move)) sketchMoves.push(move.id);
+			}
+			sketchMoves.sort();
+		}
+		const allMoves = [...eggMoves, ...moves, ...sketchMoves];
+
+		const results: SearchRow[] = [];
+		if (eggMoves.length) {
+			const rare = eggMoves.length === 4 ? eggMoves[3] : null;
+			results.push(['header', TL`Egg Moves`]);
+			for (const id of eggMoves) {
+				if (id !== rare) results.push(['move', id]);
+			}
+			if (rare) {
+				results.push(['header', TL`Rare Egg Move`]);
+				results.push(['move', rare]);
+			}
+		}
+		const usableMoves: SearchRow[] = [];
+		const uselessMoves: SearchRow[] = [];
+		for (const [list, usableHeader, uselessHeader] of [
+			[moves, TL`Moves`, TL`Usually useless moves`], [sketchMoves, TL`Sketched moves`, TL`Useless sketched moves`],
+		] as const) {
+			let addedUsable = false;
+			let addedUseless = false;
+			for (const id of list) {
+				if (this.moveIsNotUseless(id, species, allMoves, this.set)) {
+					if (!addedUsable) usableMoves.push(['header', usableHeader]);
+					addedUsable = true;
+					usableMoves.push(['move', id]);
+				} else {
+					if (!addedUseless) uselessMoves.push(['header', uselessHeader]);
+					addedUseless = true;
+					uselessMoves.push(['move', id]);
+				}
+			}
+		}
+		return [...results, ...usableMoves, ...uselessMoves];
+	}
 	getBaseResults() {
 		if (!this.species) return this.getDefaultResults();
+		if (this.formatType === 'pokerogue') return this.getPokeRogueResults();
 		const dex = this.dex;
 		let species = dex.species.get(this.species);
 		const format = this.format;

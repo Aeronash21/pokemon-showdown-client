@@ -33,6 +33,9 @@
 				if (this.curTeam.format.includes('champions')) {
 					this.curTeam.dex = Dex.mod('champions');
 				}
+				if (this.curTeam.format.includes('pokerogue') && window.BattleTeambuilderTable && BattleTeambuilderTable.pokerogue) {
+					this.curTeam.dex = Dex.mod('pokerogue');
+				}
 				Storage.activeSetList = this.curSetList;
 			}
 		},
@@ -761,6 +764,9 @@
 			if (this.curTeam.format.includes('champions')) {
 				this.curTeam.dex = Dex.mod('champions');
 			}
+			if (this.curTeam.format.includes('pokerogue') && window.BattleTeambuilderTable && BattleTeambuilderTable.pokerogue) {
+				this.curTeam.dex = Dex.mod('pokerogue');
+			}
 			Storage.activeSetList = this.curSetList = Storage.unpackTeam(this.curTeam.team);
 			this.curTeamIndex = i;
 			this.update();
@@ -1358,6 +1364,7 @@
 				if (this.curTeam.gen === 9 && !isChampions) {
 					buf += '<span class="detailcell"><label>Tera Type</label>' + (set.teraType || species.requiredTeraType || species.types[0]) + '</span>';
 				}
+				buf += this.getPassiveDetailCell(set);
 			}
 			buf += '</button></div></div>';
 
@@ -1627,6 +1634,9 @@
 			}
 			if (this.curTeam.format.includes('champions')) {
 				this.curTeam.dex = Dex.mod('champions');
+			}
+			if (this.curTeam.format.includes('pokerogue') && window.BattleTeambuilderTable && BattleTeambuilderTable.pokerogue) {
+				this.curTeam.dex = Dex.mod('pokerogue');
 			}
 			this.save();
 			if (this.curTeam.gen === 5 && !Dex.loadedSpriteData['bw']) Dex.loadSpriteData('bw');
@@ -2888,6 +2898,49 @@
 		 * Set details form
 		 *********************************************************/
 
+		/*********************************************************
+		 * PokeRogue passives
+		 *********************************************************/
+
+		/** The PokeRogue passive of a species (or form), or '' */
+		getPokeRoguePassive: function (speciesName) {
+			var table = window.BattleTeambuilderTable && BattleTeambuilderTable.pokerogue;
+			if (!table || !this.curTeam || !this.curTeam.format.includes('pokerogue')) return '';
+			var species = this.curTeam.dex.species.get(speciesName);
+			for (var i = 0; species.exists && i < 4; i++) {
+				if (table.passives[species.id]) return table.passives[species.id];
+				var from = species.battleOnly || species.changesFrom || species.baseSpecies;
+				if (Array.isArray(from)) from = from[0];
+				var next = this.curTeam.dex.species.get(from);
+				if (!next.exists || next.id === species.id) break;
+				species = next;
+			}
+			return '';
+		},
+		/** A set's passive: its species' passive, plus what it becomes after Mega Evolving / Gigantamaxing */
+		getSetPassive: function (set) {
+			var passive = this.getPokeRoguePassive(set.species);
+			if (!passive) return null;
+			var result = { passive: passive, on: set.passive !== false, after: '', afterLabel: '' };
+			var species = this.curTeam.dex.species.get(set.species);
+			var item = this.curTeam.dex.items.get(set.item);
+			var transformed = item.megaStone && (item.megaStone[species.name] || item.megaStone[species.baseSpecies]);
+			if (transformed) {
+				var transformedPassive = this.getPokeRoguePassive(transformed);
+				if (transformedPassive && transformedPassive !== passive) {
+					result.after = transformedPassive;
+					result.afterLabel = item.id === 'maxmushrooms' ? 'Gigantamaxing' : 'Mega Evolving';
+				}
+			}
+			return result;
+		},
+		getPassiveDetailCell: function (set) {
+			var info = this.getSetPassive(set);
+			if (!info) return '';
+			var value = info.on ? BattleLog.escapeHTML(info.passive) : 'Off';
+			return '<span class="detailcell" title="' + BattleLog.escapeHTML('Passive: ' + info.passive + (info.on ? '' : ' (off)') + (info.after ? '; ' + info.after + ' after ' + info.afterLabel : '')) + '"><label>Passive</label>' + value + '</span>';
+		},
+
 		updateDetailsForm: function () {
 			var buf = '';
 			var set = this.curSet;
@@ -2985,6 +3038,18 @@
 				buf += '</select></div></div>';
 			}
 
+			var passiveInfo = this.getSetPassive(set);
+			if (passiveInfo) {
+				buf += '<div class="formrow"><label class="formlabel" title="Pok&eacute;Rogue passive ability">Passive:</label><div>';
+				buf += '<strong>' + BattleLog.escapeHTML(passiveInfo.passive) + '</strong>';
+				if (passiveInfo.after) {
+					buf += ' <small>(' + BattleLog.escapeHTML(passiveInfo.after) + ' after ' + passiveInfo.afterLabel + ')</small>';
+				}
+				buf += '<br /><label class="checkbox inline"><input type="radio" name="passive" value="on"' + (passiveInfo.on ? ' checked' : '') + ' /> On</label> ';
+				buf += '<label class="checkbox inline"><input type="radio" name="passive" value="off"' + (!passiveInfo.on ? ' checked' : '') + ' /> Off</label>';
+				buf += '</div></div>';
+			}
+
 			buf += '</form>';
 			if (species.cosmeticFormes) {
 				buf += '<button class="altform button">Change sprite</button>';
@@ -3060,6 +3125,14 @@
 				delete set.hpType;
 			}
 
+			// PokeRogue passive on/off
+			var passiveChoice = this.$chart.find('input[name=passive]:checked').val();
+			if (passiveChoice === 'off') {
+				set.passive = false;
+			} else if (passiveChoice === 'on') {
+				delete set.passive;
+			}
+
 			// Tera type
 			var teraType = this.$chart.find('select[name=teratype]').val();
 			if (!isChampions && Dex.types.isName(teraType)) {
@@ -3096,6 +3169,7 @@
 				if (this.curTeam.gen === 9 && !isChampions) {
 					buf += '<span class="detailcell"><label>Tera Type</label>' + (set.teraType || species.requiredTeraType || species.types[0]) + '</span>';
 				}
+				buf += this.getPassiveDetailCell(set);
 			}
 			this.$('button[name=details]').html(buf);
 

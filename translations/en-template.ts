@@ -90,6 +90,8 @@ export const translations: TranslationCatalog = {
 	// TRANSLATORS: appends a parenthetical to a value, e.g. "Ability: ? (Levitate, Heatproof)"
 	// TRANSLATORS: note the leading space (fullwidth parens probably don't want one)
 	" ({PARENTHETICAL})": null,
+	"Egg Moves": null,
+	"Rare Egg Move": null,
 
 	// #endregion Generic UI
 

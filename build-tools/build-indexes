@@ -1205,6 +1205,104 @@ process.stdout.write("Building `data/teambuilder-tables.js`... ");
 		}
 	}
 
+	//
+	// PokeRogue (server mod `pokerogue`: data/mods/pokerogue)
+	//
+
+	if (fs.existsSync('caches/pokemon-showdown/dist/data/mods/pokerogue/scripts.js')) {
+		const prDex = Dex.mod('pokerogue');
+		const table = {
+			// every move a PokeRogue move list uses; learnsets below index into it
+			moveIds: [],
+			// species id -> move list, each move as 2 base-36 characters (index into moveIds)
+			learnsets: {},
+			// species id -> [egg move, egg move, egg move, rare egg move]
+			eggMoves: {},
+			// species id -> passive ability name
+			passives: {},
+			overrideTier: {},
+			tiers: [],
+			formatSlices: {},
+			metagameBans: {},
+			items: [],
+		};
+		BattleTeambuilderTable['pokerogue'] = table;
+
+		const prSpecies = Object.keys(prDex.data.Pokedex).sort()
+			.map(id => prDex.species.get(id))
+			.filter(species => species.pokeRogue);
+
+		const moveIndex = new Map();
+		for (const species of prSpecies) {
+			const learnset = prDex.data.Learnsets[species.id];
+			if (!learnset?.pokeRogue || !learnset.learnset) continue;
+			let codes = '';
+			for (const moveid of Object.keys(learnset.learnset).sort()) {
+				if (!moveIndex.has(moveid)) {
+					moveIndex.set(moveid, table.moveIds.length);
+					table.moveIds.push(moveid);
+				}
+				codes += moveIndex.get(moveid).toString(36).padStart(2, '0');
+			}
+			table.learnsets[species.id] = codes;
+		}
+		if (table.moveIds.length > 36 * 36) throw new Error(`Too many PokeRogue moves for 2-character codes`);
+
+		for (const species of prSpecies) {
+			if (species.passive) table.passives[species.id] = species.passive;
+			// cosmetic forms with their own passive (Unown letters, Sawsbuck seasons)
+			if (species.cosmeticPassives) Object.assign(table.passives, species.cosmeticPassives);
+			if (species.eggMoves) table.eggMoves[species.id] = species.eggMoves.map(toID);
+		}
+
+		// Tiers: Smogon National Dex tiers + PokeRogue changes (server: data/mods/pokerogue/tiers.ts)
+		const tierTable = {};
+		for (const species of prSpecies) {
+			const tier = species.natDexTier || 'RU';
+			table.overrideTier[species.id] = tier;
+			if (species.isCosmeticForme || species.forme.includes('Totem')) continue;
+			// forms a Pokemon only changes into mid-battle without an item
+			if (species.battleOnly && !species.requiredItem && !species.requiredItems && !species.requiredMove) continue;
+			if ((species.baseSpecies === 'Ogerpon' && species.forme.includes('Tera')) || species.forme.includes('Zen')) continue;
+			if (!tierTable[tier]) tierTable[tier] = [];
+			tierTable[tier].push(species.id);
+		}
+		for (const tier of ["AG", "Uber", "OU", "(OU)", "UUBL", "UU", "RUBL", "RU", "NFE", "LC"]) {
+			if (!tierTable[tier]) continue;
+			table.formatSlices[tier] = table.tiers.length;
+			if (tier.startsWith('(')) {
+				table.tiers.push(['header', tier.slice(1, -1) + " by technicality"]);
+			} else if (tier === 'NFE') {
+				table.tiers.push(['header', "NFEs not in a higher tier"]);
+			} else {
+				table.tiers.push(['header', tier]);
+			}
+			table.tiers.push(...tierTable[tier]);
+		}
+
+		// Pokemon each PokeRogue format bans (keyed by format id without "gen9")
+		for (const format of Dex.formats.all()) {
+			if (format.mod !== 'pokerogue' || format.effectType !== 'Format' || format.team) continue;
+			const ruleTable = Dex.formats.getRuleTable(format);
+			const bans = {};
+			for (const species of prSpecies) {
+				let banned = ruleTable.isBannedSpecies(species);
+				for (const itemName of species.requiredItems || []) {
+					if (ruleTable.isBanned('item:' + toID(itemName))) banned = true;
+				}
+				if (banned) bans[species.id] = 1;
+			}
+			table.metagameBans[format.id.slice(4)] = bans;
+		}
+
+		// Items: National Dex items, minus Z-Crystals, plus Max Mushrooms
+		for (const row of BattleTeambuilderTable['gen9natdex'].items) {
+			if (typeof row === 'string' && prDex.items.get(row).zMove) continue;
+			table.items.push(row);
+			if (Array.isArray(row) && row[1] === "Pokémon-specific items") table.items.push('maxmushrooms');
+		}
+	}
+
 	// Client relevant data that should be overridden by past gens and mods
 	const overrideSpeciesKeys = [
 		'abilities', 'baseStats', 'cosmeticFormes', 'isNonstandard', 'requiredItems', 'types', 'unreleasedHidden',
@@ -1304,6 +1402,7 @@ process.stdout.write("Building `data/teambuilder-tables.js`... ");
 
 	for (const mod of [
 		'gen3rs', 'gen3frlg', 'gen5bw1', 'gen7letsgo', 'gen8bdsp', 'gen9ssb', 'champions',
+		...(BattleTeambuilderTable['pokerogue'] ? ['pokerogue'] : []),
 	]) {
 		const modDex = Dex.mod(mod);
 		const modData = modDex.data;
@@ -1421,7 +1520,13 @@ process.stdout.write("Building `data/moves,items,abilities,typechart,learnsets.j
 
 {
 	const Items = requireNoCache('../caches/pokemon-showdown/dist/data/items.js').Items;
+	// PokeRogue: Gigantamax like a Mega Evolution by holding Max Mushrooms
+	if (fs.existsSync('caches/pokemon-showdown/dist/data/mods/pokerogue/items.js')) {
+		const pokeRogueItems = requireNoCache('../caches/pokemon-showdown/dist/data/mods/pokerogue/items.js').Items;
+		if (pokeRogueItems.maxmushrooms && !Items.maxmushrooms) Items.maxmushrooms = { ...pokeRogueItems.maxmushrooms };
+	}
 	for (const id in Items) {
+		if (id === 'maxmushrooms') continue; // not in the base dex; its text is in the mod's data
 		const item = Dex.items.get(Items[id].name);
 		const text = Dex.text.get(item);
 		if (text.desc) Items[id].desc = text.desc;

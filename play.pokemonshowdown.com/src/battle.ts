@@ -2811,6 +2811,10 @@ export class Battle {
 				poke.side.addSideCondition(effect, false);
 				this.scene.updateWeather();
 				break;
+			case 'passive':
+				// PokeRogue formats: |-start|POKEMON|Passive|ABILITY
+				poke.addVolatile('passive' as ID, args[3]);
+				break;
 			}
 			if (!(effect.id === 'typechange' && poke.terastallized) &&
 				effect.id !== 'futuresight' && effect.id !== 'doomdesire') {
@@ -3529,6 +3533,9 @@ export class Battle {
 			}
 			if (this.tier.includes(`Champions`)) {
 				this.dex = Dex.mod('champions' as ID);
+			}
+			if (this.tier.includes('PokeRogue') && window.BattleTeambuilderTable?.['pokerogue']) {
+				this.dex = Dex.mod('pokerogue' as ID);
 			}
 			this.log(args);
 			break;
