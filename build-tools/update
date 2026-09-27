@@ -288,25 +288,6 @@ replaysContents = cachebust(replaysContents, 'replay.pokemonshowdown.com');
 fs.mkdirSync('replay.pokemonshowdown.com/caches', { recursive: true });
 fs.writeFileSync('replay.pokemonshowdown.com/caches/index.php', replaysContents);
 
-// Hosted ND Shared Power client (Render): the site is testclient-old.html,
-// whose scripts and styles have no cachebuster, so browsers kept running
-// old code after a deploy. Tag each local file with its hash.
-if (process.env.RENDER) {
-	const testclientPath = 'play.pokemonshowdown.com/testclient-old.html';
-	const testclient = fs.readFileSync(testclientPath, UTF8).replace(
-		/(src=|href=)"((?:js|data|style)\/[^"?]+)(\?[^"]*)?"/g,
-		(match, attr, url) => {
-			try {
-				const contents = fs.readFileSync('play.pokemonshowdown.com/' + url);
-				return `${attr}"${url}?${crypto.createHash('md5').update(contents).digest('hex').slice(0, 8)}"`;
-			} catch {
-				return match;
-			}
-		}
-	);
-	fs.writeFileSync(testclientPath, testclient);
-}
-
 let teamsContents = fs.readFileSync('teams.pokemonshowdown.com/index.html', UTF8);
 teamsContents = cachebust(teamsContents, 'teams.pokemonshowdown.com');
 fs.mkdirSync('teams.pokemonshowdown.com/caches', { recursive: true });
