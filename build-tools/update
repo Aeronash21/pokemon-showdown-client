@@ -114,11 +114,12 @@ if (process.argv[2] === 'full') {
 		compileOpts
 	);
 } else {
-	try {
-		fs.statSync('play.pokemonshowdown.com/data/graphics.js');
-		// graphics.js exists, recompile it
-		delete compileOpts.ignore;
-	} catch {}
+	// Upstream only rebuilds graphics.js when it already exists, and
+	// otherwise loads play.pokemonshowdown.com's copy. That copy doesn't
+	// have this fork's battle-animations changes (e.g. the PokeRogue
+	// "Passive: X" status tag, which showed up as "[[passive]]"), so
+	// always build our own.
+	delete compileOpts.ignore;
 }
 
 compiledFiles += compiler.compileToDir(`play.pokemonshowdown.com/src`, `play.pokemonshowdown.com/js`, compileOpts);
