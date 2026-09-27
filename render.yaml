@@ -20,9 +20,4 @@ services:
       cp render-index.html
       play.pokemonshowdown.com/index.html
     staticPublishPath: ./play.pokemonshowdown.com
-    # Always check for a newer file, so a deploy shows up without a hard refresh
-    headers:
-      - path: /*
-        name: Cache-Control
-        value: no-cache
     autoDeploy: true
