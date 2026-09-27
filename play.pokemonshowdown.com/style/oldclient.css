@@ -2419,6 +2419,64 @@ p.or:after {
 .setcell-typeicons img {
 	margin-left: 1px;
 }
+
+/* PokeRogue: passive on/off button in the set chart */
+.setcell-passive {
+	margin: 1px 0 0 4px;
+}
+.passivetoggle {
+	display: block;
+	max-width: 132px;
+	height: 23px;
+	padding: 0 5px;
+	border: 1px solid #8FA8C4;
+	border-radius: 4px;
+	background: #F2F8FF;
+	color: #1A3A5C;
+	font-size: 8pt;
+	line-height: 10px;
+	text-align: left;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	cursor: pointer;
+}
+.passivetoggle small {
+	display: block;
+	font-size: 7pt;
+	font-weight: bold;
+	color: #2B7A2B;
+}
+.passivetoggle:hover {
+	border-color: #4A6F98;
+	background: #FFFFFF;
+}
+.passivetoggle.passiveoff {
+	border-color: #AAAAAA;
+	background: #E8E8E8;
+	color: #777777;
+	text-decoration: line-through;
+}
+.passivetoggle.passiveoff small {
+	color: #B03030;
+	text-decoration: none;
+}
+.dark .passivetoggle {
+	border-color: #5A7A9A;
+	background: #2A3A4A;
+	color: #DDEEFF;
+}
+.dark .passivetoggle small {
+	color: #7FD07F;
+}
+.dark .passivetoggle.passiveoff {
+	border-color: #555555;
+	background: #333333;
+	color: #999999;
+}
+.dark .passivetoggle.passiveoff small {
+	color: #F08080;
+}
 .setcell-sprite {
 	height: 82px;
 	padding: 1px;

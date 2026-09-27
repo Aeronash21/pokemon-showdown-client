@@ -1496,7 +1496,7 @@ class BattleAbilitySearch extends BattleTypedSearch<'ability'> {
 			if (passive) {
 				const off = this.set?.passive === false;
 				abilitySet.unshift(['html', `Passive: <strong>${passive.replace(/[<>&"]/g, '')}</strong>` +
-					(off ? ` <em>(turned off)</em>` : ` <small>(always active; turn it off in Details)</small>`)]);
+					(off ? ` <em>(turned off)</em>` : ` <small>(always active; click Passive above to turn it off)</small>`)]);
 			}
 		}
 
@@ -1620,10 +1620,17 @@ class BattleItemSearch extends BattleTypedSearch<'item'> {
 			// toxicboost: 'toxicorb',
 			// flareboost: 'flameorb',
 		}[toID(this.set?.ability) as string];
+		// PokeRogue: Necrozma-Dusk-Mane / Dawn-Wings Ultra Burst with Ultranecrozium Z
+		const pokeRogueNecrozma = this.formatType === 'pokerogue' &&
+			['Necrozma-Dusk-Mane', 'Necrozma-Dawn-Wings'].includes(speciesName);
 		for (const row of results) {
 			if (row[0] !== 'item') continue;
 			const item = this.dex.items.get(row[1]);
-			if (item.itemUser?.includes(speciesName)) speciesSpecific.push(row);
+			if (item.itemUser?.includes(speciesName)) {
+				speciesSpecific.push(row);
+			} else if (pokeRogueNecrozma && item.id === 'ultranecroziumz') {
+				speciesSpecific.push(row);
+			}
 			if (abilityItem === item.id) abilitySpecific.push(row);
 		}
 		if (speciesSpecific.length) {
@@ -1965,7 +1972,8 @@ class BattleMoveSearch extends BattleTypedSearch<'move'> {
 		const species = this.dex.species.get(this.species);
 		const learnable = this.pokeRogueMoves(species.id);
 		const eggMoves = this.pokeRogueEggMoves(species.id).filter(id => learnable.has(id));
-		const moves = [...learnable].filter(id => !eggMoves.includes(id)).sort();
+		// (Array.from: Babel compiles spreads in loose mode, which only works on arrays)
+		const moves = Array.from(learnable).filter(id => !eggMoves.includes(id)).sort();
 		const sketchMoves: ID[] = [];
 		if (learnable.has('sketch' as ID)) {
 			for (const id in BattleMovedex) {

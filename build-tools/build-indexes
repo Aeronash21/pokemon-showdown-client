@@ -53,6 +53,15 @@ function requireNoCache(pathSpec) {
 	index = index.concat(Object.keys(Dex.data.Pokedex).map(x => x + ' pokemon'));
 	index = index.concat(Object.keys(Dex.data.Moves).map(x => x + ' move'));
 	index = index.concat(Object.keys(Dex.data.Items).map(x => x + ' item'));
+	// Items that only exist in a server mod (PokeRogue's Max Mushrooms), so they can be searched for
+	const modOnlyItems = {};
+	if (fs.existsSync('caches/pokemon-showdown/dist/data/mods/pokerogue/items.js')) {
+		const pokeRogueItems = requireNoCache('../caches/pokemon-showdown/dist/data/mods/pokerogue/items.js').Items;
+		for (const id in pokeRogueItems) {
+			if (!Dex.data.Items[id] && pokeRogueItems[id].name) modOnlyItems[id] = pokeRogueItems[id].name;
+		}
+	}
+	index = index.concat(Object.keys(modOnlyItems).map(x => x + ' item'));
 	index = index.concat(Object.keys(Dex.data.Abilities).map(x => x + ' ability'));
 	index = index.concat(Object.keys(Dex.data.TypeChart).map(x => toID(x) + ' type'));
 	index = index.concat(['physical', 'special', 'status'].map(x => toID(x) + ' category'));
@@ -139,6 +148,9 @@ function requireNoCache(pathSpec) {
 		const name = Dex.data.Items[id].name;
 		generateAlias(id, name, 'item');
 	}
+	for (const id in modOnlyItems) {
+		generateAlias(id, modOnlyItems[id], 'item');
+	}
 	for (const id in Dex.data.Abilities) {
 		const name = Dex.data.Abilities[id].name;
 		generateAlias(id, name, 'ability');
@@ -201,7 +213,7 @@ function requireNoCache(pathSpec) {
 		switch (entry[1]) {
 		case 'pokemon': name = Dex.species.get(id).name; break;
 		case 'move': name = Dex.moves.get(id).name; break;
-		case 'item': name = Dex.items.get(id).name; break;
+		case 'item': name = modOnlyItems[id] || Dex.items.get(id).name; break;
 		case 'ability': name = Dex.abilities.get(id).name; break;
 		case 'article': name = BattleArticleTitles[id] || ''; break;
 		}
@@ -1295,9 +1307,10 @@ process.stdout.write("Building `data/teambuilder-tables.js`... ");
 			table.metagameBans[format.id.slice(4)] = bans;
 		}
 
-		// Items: National Dex items, minus Z-Crystals, plus Max Mushrooms
+		// Items: National Dex items, minus Z-Crystals (except Ultranecrozium Z), plus Max Mushrooms
 		for (const row of BattleTeambuilderTable['gen9natdex'].items) {
-			if (typeof row === 'string' && prDex.items.get(row).zMove) continue;
+			// (the only Z-Crystal is Ultranecrozium Z, for Ultra Necrozma)
+			if (typeof row === 'string' && prDex.items.get(row).zMove && row !== 'ultranecroziumz') continue;
 			table.items.push(row);
 			if (Array.isArray(row) && row[1] === "Pokémon-specific items") table.items.push('maxmushrooms');
 		}

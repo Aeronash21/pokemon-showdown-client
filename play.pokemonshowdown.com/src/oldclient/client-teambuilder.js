@@ -1364,7 +1364,6 @@
 				if (this.curTeam.gen === 9 && !isChampions) {
 					buf += '<span class="detailcell"><label>Tera Type</label>' + (set.teraType || species.requiredTeraType || species.types[0]) + '</span>';
 				}
-				buf += this.getPassiveDetailCell(set);
 			}
 			buf += '</button></div></div>';
 
@@ -1378,6 +1377,8 @@
 			}
 			buf += itemicon;
 			buf += '</div>';
+			// PokeRogue passive on/off
+			if (baseFormat.includes('pokerogue')) buf += '<div class="setcell setcell-passive">' + this.getPassiveToggle(set) + '</div>';
 			buf += '<div class="setcell setcell-typeicons">';
 			var types = species.types;
 			if (types) {
@@ -2072,6 +2073,8 @@
 			} else {
 				this.$('.setcol-details .itemicon').css('background', 'none');
 			}
+			// PokeRogue: the passive can change with the species or item (Mega Stone, Max Mushrooms)
+			this.$('.setcell-passive').html(this.getPassiveToggle(set));
 
 			this.updateStatGraph();
 		},
@@ -2917,28 +2920,63 @@
 			}
 			return '';
 		},
-		/** A set's passive: its species' passive, plus what it becomes after Mega Evolving / Gigantamaxing */
+		/**
+		 * A set's passive: the one it starts the battle with, plus what it
+		 * becomes after Mega Evolving / Gigantamaxing / Ultra Bursting
+		 */
 		getSetPassive: function (set) {
-			var passive = this.getPokeRoguePassive(set.species);
+			if (!set || !set.species) return null;
+			var dex = this.curTeam.dex;
+			var species = dex.species.get(set.species);
+			var item = dex.items.get(set.item);
+			// A Mega / Gigantamax form picked directly starts the battle as its base form
+			var start = species;
+			if (species.battleOnly && species.requiredItems && species.requiredItems.length) {
+				start = dex.species.get(Array.isArray(species.battleOnly) ? species.battleOnly[0] : species.battleOnly);
+			}
+			var passive = this.getPokeRoguePassive(start.name);
 			if (!passive) return null;
 			var result = { passive: passive, on: set.passive !== false, after: '', afterLabel: '' };
-			var species = this.curTeam.dex.species.get(set.species);
-			var item = this.curTeam.dex.items.get(set.item);
-			var transformed = item.megaStone && (item.megaStone[species.name] || item.megaStone[species.baseSpecies]);
+			var transformed = start !== species ? species.name : '';
+			if (!transformed && item.megaStone) transformed = item.megaStone[start.name] || item.megaStone[start.baseSpecies] || '';
+			if (!transformed && item.id === 'ultranecroziumz' &&
+				(start.name === 'Necrozma-Dusk-Mane' || start.name === 'Necrozma-Dawn-Wings')) {
+				transformed = 'Necrozma-Ultra';
+			}
 			if (transformed) {
 				var transformedPassive = this.getPokeRoguePassive(transformed);
 				if (transformedPassive && transformedPassive !== passive) {
 					result.after = transformedPassive;
-					result.afterLabel = item.id === 'maxmushrooms' ? 'Gigantamaxing' : 'Mega Evolving';
+					result.afterLabel = transformed === 'Necrozma-Ultra' ? 'Ultra Bursting' :
+						(item.id === 'maxmushrooms' || species.forme === 'Gmax') ? 'Gigantamaxing' : 'Mega Evolving';
 				}
 			}
 			return result;
 		},
-		getPassiveDetailCell: function (set) {
+		/** The Passive on/off button in the set chart ('' if the Pokemon has no passive) */
+		getPassiveToggle: function (set) {
 			var info = this.getSetPassive(set);
 			if (!info) return '';
-			var value = info.on ? BattleLog.escapeHTML(info.passive) : 'Off';
-			return '<span class="detailcell" title="' + BattleLog.escapeHTML('Passive: ' + info.passive + (info.on ? '' : ' (off)') + (info.after ? '; ' + info.after + ' after ' + info.afterLabel : '')) + '"><label>Passive</label>' + value + '</span>';
+			var title = 'Pok\u00E9Rogue passive: ' + info.passive +
+				(info.after ? ' (' + info.after + ' after ' + info.afterLabel + ')' : '') +
+				(info.on ? '. On: click to turn it off.' : '. Off: click to turn it on.');
+			var name = info.passive + (info.after ? ' / ' + info.after : '');
+			return '<button name="togglePassive" class="passivetoggle' + (info.on ? '' : ' passiveoff') + '" title="' + BattleLog.escapeHTML(title) + '">' +
+				'<small>Passive: ' + (info.on ? 'On' : 'Off') + '</small>' + BattleLog.escapeHTML(name) + '</button>';
+		},
+		togglePassive: function (i, button) {
+			var index = +($(button).closest('li').attr('value'));
+			var set = this.curSetList[index];
+			if (!set || !this.getSetPassive(set)) return;
+			if (set.passive === false) {
+				delete set.passive;
+			} else {
+				set.passive = false;
+			}
+			this.save();
+			$(button).closest('.setcell-passive').html(this.getPassiveToggle(set));
+			if (set === this.curSet && this.curChartType === 'details') this.updateDetailsForm();
+			if (set === this.curSet && this.curChartType === 'ability') this.updateChart(true);
 		},
 
 		updateDetailsForm: function () {
@@ -3169,9 +3207,9 @@
 				if (this.curTeam.gen === 9 && !isChampions) {
 					buf += '<span class="detailcell"><label>Tera Type</label>' + (set.teraType || species.requiredTeraType || species.types[0]) + '</span>';
 				}
-				buf += this.getPassiveDetailCell(set);
 			}
 			this.$('button[name=details]').html(buf);
+			this.$('.setcell-passive').html(this.getPassiveToggle(set));
 
 			this.save();
 			this.updatePokemonSprite();
