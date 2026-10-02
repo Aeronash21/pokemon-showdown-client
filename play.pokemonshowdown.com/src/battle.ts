@@ -3534,7 +3534,9 @@ export class Battle {
 			if (this.tier.includes(`Champions`)) {
 				this.dex = Dex.mod('champions' as ID);
 			}
-			if (this.tier.includes('PokeRogue') && window.BattleTeambuilderTable?.['pokerogue']) {
+			// (Chaos: PokeRogue + Mix and Mega + Shared Power)
+			if ((this.tier.includes('PokeRogue') || this.tier.startsWith('[Gen 9] Chaos')) &&
+				window.BattleTeambuilderTable?.['pokerogue']) {
 				this.dex = Dex.mod('pokerogue' as ID);
 			}
 			this.log(args);

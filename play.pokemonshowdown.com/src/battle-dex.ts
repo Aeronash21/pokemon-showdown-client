@@ -542,7 +542,9 @@ export const Dex = new class implements ModdedDex {
 		if (dex.gen === 9 && formatid.includes('champions')) {
 			dex = Dex.mod('champions' as ID);
 		}
-		if (dex.gen === 9 && formatid.includes('pokerogue') && window.BattleTeambuilderTable?.['pokerogue']) {
+		// (Chaos: PokeRogue + Mix and Mega + Shared Power)
+		if (dex.gen === 9 && (formatid.includes('pokerogue') || formatid.startsWith('chaos')) &&
+			window.BattleTeambuilderTable?.['pokerogue']) {
 			dex = Dex.mod('pokerogue' as ID);
 		}
 		return dex;

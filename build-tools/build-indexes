@@ -1237,6 +1237,8 @@ process.stdout.write("Building `data/teambuilder-tables.js`... ");
 			formatSlices: {},
 			metagameBans: {},
 			items: [],
+			// Chaos (server mod `chaos`: PokeRogue + Mix and Mega + Shared Power): every Z-Crystal too
+			chaosItems: [],
 		};
 		BattleTeambuilderTable['pokerogue'] = table;
 
@@ -1292,9 +1294,9 @@ process.stdout.write("Building `data/teambuilder-tables.js`... ");
 			table.tiers.push(...tierTable[tier]);
 		}
 
-		// Pokemon each PokeRogue format bans (keyed by format id without "gen9")
+		// Pokemon each PokeRogue / Chaos format bans (keyed by format id without "gen9")
 		for (const format of Dex.formats.all()) {
-			if (format.mod !== 'pokerogue' || format.effectType !== 'Format' || format.team) continue;
+			if (!['pokerogue', 'chaos'].includes(format.mod) || format.effectType !== 'Format' || format.team) continue;
 			const ruleTable = Dex.formats.getRuleTable(format);
 			const bans = {};
 			for (const species of prSpecies) {
@@ -1313,6 +1315,10 @@ process.stdout.write("Building `data/teambuilder-tables.js`... ");
 			if (typeof row === 'string' && prDex.items.get(row).zMove && row !== 'ultranecroziumz') continue;
 			table.items.push(row);
 			if (Array.isArray(row) && row[1] === "Pokémon-specific items") table.items.push('maxmushrooms');
+		}
+		for (const row of BattleTeambuilderTable['gen9natdex'].items) {
+			table.chaosItems.push(row);
+			if (Array.isArray(row) && row[1] === "Pokémon-specific items") table.chaosItems.push('maxmushrooms');
 		}
 	}
 

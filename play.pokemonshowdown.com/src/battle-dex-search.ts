@@ -676,7 +676,10 @@ abstract class BattleTypedSearch<T extends SearchType> {
 		'nfe' | 'ssdlc1' | 'ssdlc1doubles' | 'predlc' | 'predlcdoubles' | 'svdlc1' | 'svdlc1doubles' | 'stadium' | 'lc' |
 		'champions' | 'natdexchampions' | 'pokerogue' | null = null;
 	isDoubles = false;
-	/** PokeRogue formats: the format id without "gen9" (e.g. `pokerogueou`), for its banlist. */
+	/**
+	 * PokeRogue formats: the format id without "gen9" (e.g. `pokerogueou`), for its banlist.
+	 * Chaos (`chaos`: PokeRogue + Mix and Mega + Shared Power) uses PokeRogue's Pokemon too.
+	 */
 	pokeRogueFormat = '' as ID;
 
 	/**
@@ -707,7 +710,8 @@ abstract class BattleTypedSearch<T extends SearchType> {
 		} else if (!format) {
 			this.dex = Dex;
 		}
-		const pokeRogueFormat = format.startsWith('pokerogue') && BattleTeambuilderTable?.['pokerogue'] ? format : '';
+		const pokeRogueFormat = (format.startsWith('pokerogue') || format.startsWith('chaos')) &&
+			BattleTeambuilderTable?.['pokerogue'] ? format : '';
 
 		if (format.startsWith('dlc1') && this.dex.gen === 8) {
 			if (format.includes('doubles')) {
@@ -818,11 +822,11 @@ abstract class BattleTypedSearch<T extends SearchType> {
 			if (!format) format = 'anythinggoes' as ID;
 		}
 		if (pokeRogueFormat) {
-			// PokeRogue OU / Ubers / AG / VGC / VGC Restricted / Random Battle
+			// PokeRogue OU / Ubers / AG / VGC / VGC Restricted / Random Battle, and Chaos
 			this.formatType = 'pokerogue';
 			this.dex = Dex.mod('pokerogue' as ID);
 			this.pokeRogueFormat = pokeRogueFormat;
-			format = (pokeRogueFormat.slice(9) || 'ou') as ID;
+			format = (pokeRogueFormat.startsWith('chaos') ? 'anythinggoes' : pokeRogueFormat.slice(9) || 'ou') as ID;
 			this.isDoubles = format.startsWith('vgc');
 		}
 		this.format = format;
@@ -1593,6 +1597,13 @@ class BattleItemSearch extends BattleTypedSearch<'item'> {
 			table = table[`natdexchampions`];
 		} else if (this.formatType === 'pokerogue') {
 			table = table[`pokerogue`];
+			// Chaos: every Z-Crystal too
+			if (this.pokeRogueFormat.startsWith('chaos') && table.chaosItems) {
+				if (!table.chaosItemSet) {
+					table.chaosItemSet = table.chaosItems.map((r: any) => typeof r === 'string' ? ['item', r] : [r[0], r[1]]);
+				}
+				return table.chaosItemSet;
+			}
 		} else if (this.dex.gen < 9) {
 			table = table[`gen${this.dex.gen}`];
 		}

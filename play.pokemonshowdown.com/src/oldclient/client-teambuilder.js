@@ -3,6 +3,18 @@
 	// this is a useful global
 	var teams;
 
+	/**
+	 * PokeRogue formats use PokeRogue's Pokemon, move lists and passives; so does
+	 * Chaos (gen9chaos...: PokeRogue + Mix and Mega + Shared Power), which also
+	 * has Dynamax (the Gigantamax factor).
+	 */
+	function isPokeRogueFormat(format) {
+		return !!format && (format.includes('pokerogue') || /^(gen9)?chaos/.test(format));
+	}
+	function isChaosFormat(format) {
+		return !!format && /^(gen9)?chaos/.test(format);
+	}
+
 	exports.TeambuilderRoom = exports.Room.extend({
 		type: 'teambuilder',
 		title: 'Teambuilder',
@@ -33,7 +45,7 @@
 				if (this.curTeam.format.includes('champions')) {
 					this.curTeam.dex = Dex.mod('champions');
 				}
-				if (this.curTeam.format.includes('pokerogue') && window.BattleTeambuilderTable && BattleTeambuilderTable.pokerogue) {
+				if (isPokeRogueFormat(this.curTeam.format) && window.BattleTeambuilderTable && BattleTeambuilderTable.pokerogue) {
 					this.curTeam.dex = Dex.mod('pokerogue');
 				}
 				Storage.activeSetList = this.curSetList;
@@ -764,7 +776,7 @@
 			if (this.curTeam.format.includes('champions')) {
 				this.curTeam.dex = Dex.mod('champions');
 			}
-			if (this.curTeam.format.includes('pokerogue') && window.BattleTeambuilderTable && BattleTeambuilderTable.pokerogue) {
+			if (isPokeRogueFormat(this.curTeam.format) && window.BattleTeambuilderTable && BattleTeambuilderTable.pokerogue) {
 				this.curTeam.dex = Dex.mod('pokerogue');
 			}
 			Storage.activeSetList = this.curSetList = Storage.unpackTeam(this.curTeam.team);
@@ -1360,6 +1372,9 @@
 					if (species.canGigantamax || species.forme === 'Gmax') {
 						buf += '<span class="detailcell"><label>Gmax</label>' + (set.gigantamax || species.forme === 'Gmax' ? 'Yes' : 'No') + '</span>';
 					}
+				} else if (isChaosFormat(baseFormat) && species.canGigantamax) {
+					// Chaos has Dynamax: the Gigantamax factor
+					buf += '<span class="detailcell"><label>Gmax</label>' + (set.gigantamax ? 'Yes' : 'No') + '</span>';
 				}
 				if (this.curTeam.gen === 9 && !isChampions) {
 					buf += '<span class="detailcell"><label>Tera Type</label>' + (set.teraType || species.requiredTeraType || species.types[0]) + '</span>';
@@ -1378,7 +1393,7 @@
 			buf += itemicon;
 			buf += '</div>';
 			// PokeRogue passive on/off
-			if (baseFormat.includes('pokerogue')) buf += '<div class="setcell setcell-passive">' + this.getPassiveToggle(set) + '</div>';
+			if (isPokeRogueFormat(baseFormat)) buf += '<div class="setcell setcell-passive">' + this.getPassiveToggle(set) + '</div>';
 			buf += '<div class="setcell setcell-typeicons">';
 			var types = species.types;
 			if (types) {
@@ -1636,7 +1651,7 @@
 			if (this.curTeam.format.includes('champions')) {
 				this.curTeam.dex = Dex.mod('champions');
 			}
-			if (this.curTeam.format.includes('pokerogue') && window.BattleTeambuilderTable && BattleTeambuilderTable.pokerogue) {
+			if (isPokeRogueFormat(this.curTeam.format) && window.BattleTeambuilderTable && BattleTeambuilderTable.pokerogue) {
 				this.curTeam.dex = Dex.mod('pokerogue');
 			}
 			this.save();
@@ -2908,7 +2923,7 @@
 		/** The PokeRogue passive of a species (or form), or '' */
 		getPokeRoguePassive: function (speciesName) {
 			var table = window.BattleTeambuilderTable && BattleTeambuilderTable.pokerogue;
-			if (!table || !this.curTeam || !this.curTeam.format.includes('pokerogue')) return '';
+			if (!table || !this.curTeam || !isPokeRogueFormat(this.curTeam.format)) return '';
 			var species = this.curTeam.dex.species.get(speciesName);
 			for (var i = 0; species.exists && i < 4; i++) {
 				if (table.passives[species.id]) return table.passives[species.id];
@@ -2939,6 +2954,14 @@
 			var result = { passive: passive, on: set.passive !== false, after: '', afterLabel: '' };
 			var transformed = start !== species ? species.name : '';
 			if (!transformed && item.megaStone) transformed = item.megaStone[start.name] || item.megaStone[start.baseSpecies] || '';
+			// Chaos (Mix and Mega): any Mega Stone, and the Mega's passive comes with it
+			if (!transformed && item.megaStone && isChaosFormat(this.curTeam.format) &&
+				item.id !== 'galaricawreath' && item.id !== 'maxmushrooms') {
+				for (var megaName in item.megaStone) {
+					transformed = item.megaStone[megaName];
+					break;
+				}
+			}
 			if (!transformed && item.id === 'ultranecroziumz' &&
 				(start.name === 'Necrozma-Dusk-Mane' || start.name === 'Necrozma-Dawn-Wings')) {
 				transformed = 'Necrozma-Ultra';
@@ -3026,6 +3049,14 @@
 				buf += '<label class="checkbox inline"><input type="radio" name="shiny" value="no"' + (!set.shiny ? ' checked' : '') + ' /> No</label>';
 				buf += '</div></div>';
 
+				// Chaos has Dynamax: the Gigantamax factor (Charizard-Gmax picked as a species
+				// is Charizard holding Galarica Wreath, as in PokeRogue)
+				if (isChaosFormat(this.curTeam.format) && species.canGigantamax) {
+					buf += '<div class="formrow"><label class="formlabel" title="Gigantamax when it Dynamaxes">Gigantamax:</label><div>';
+					buf += '<label class="checkbox inline"><input type="radio" name="gigantamax" value="yes"' + (set.gigantamax ? ' checked' : '') + ' /> Yes</label> ';
+					buf += '<label class="checkbox inline"><input type="radio" name="gigantamax" value="no"' + (!set.gigantamax ? ' checked' : '') + ' /> No</label>';
+					buf += '</div></div>';
+				}
 				if (this.curTeam.gen === 8 && !isBDSP) {
 					if (!species.cannotDynamax) {
 						buf += '<div class="formrow"><label class="formlabel">Dmax Level:</label><div><input type="number" min="0" max="10" step="1" name="dynamaxlevel" value="' + (typeof set.dynamaxLevel === 'number' ? set.dynamaxLevel : 10) + '" class="textbox inputform numform" /></div></div>';
@@ -3203,6 +3234,9 @@
 					if (species.canGigantamax || species.forme === 'Gmax') {
 						buf += '<span class="detailcell"><label>Gmax</label>' + (set.gigantamax || species.forme === 'Gmax' ? 'Yes' : 'No') + '</span>';
 					}
+				} else if (isChaosFormat(this.curTeam.format) && species.canGigantamax) {
+					// Chaos has Dynamax: the Gigantamax factor
+					buf += '<span class="detailcell"><label>Gmax</label>' + (set.gigantamax ? 'Yes' : 'No') + '</span>';
 				}
 				if (this.curTeam.gen === 9 && !isChampions) {
 					buf += '<span class="detailcell"><label>Tera Type</label>' + (set.teraType || species.requiredTeraType || species.types[0]) + '</span>';

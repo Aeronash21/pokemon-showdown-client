@@ -1051,8 +1051,8 @@ export class BattleTooltips {
 			text += '</p>';
 		}
 
-		// PokeRogue formats: the passive ability
-		if (this.battle.tier?.includes('PokeRogue')) {
+		// PokeRogue formats (and Chaos): the passive ability
+		if (this.battle.tier?.includes('PokeRogue') || this.battle.tier?.startsWith('[Gen 9] Chaos')) {
 			let passive = '';
 			if (serverPokemon && 'passive' in serverPokemon) {
 				passive = (serverPokemon as any).passive || '';
