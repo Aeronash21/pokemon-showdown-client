@@ -1188,8 +1188,20 @@ export class BattleLog {
 		return `color:${this.usernameColor(name)};`;
 	}
 
+	/**
+	 * Exact name colours on this server (userid: "#rrggbb"). Usernames otherwise
+	 * get a colour worked out from the name.
+	 */
+	static serverNameColors: { [userid: string]: string } = {
+		aeronash: '#808080',
+	};
+
 	static usernameColor(name: ID) {
 		if (this.colorCache[name]) return this.colorCache[name];
+		if (this.serverNameColors[name]) {
+			this.colorCache[name] = this.serverNameColors[name];
+			return this.colorCache[name];
+		}
 		let hash;
 		if (Config.customcolors[name]) {
 			hash = MD5(Config.customcolors[name]);
