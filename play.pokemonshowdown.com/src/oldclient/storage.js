@@ -429,6 +429,8 @@ Storage.onMessage = function ($e) {
 			oldTeams = Storage.teams;
 		}
 		Storage.loadPackedTeams(data.substr(1));
+		// teams live in the play.pokemonshowdown.com frame now, not this origin's localStorage
+		Storage.teamsInStorage = undefined;
 		Storage.saveTeams = function () {
 			var packedTeams = Storage.packAllTeams(Storage.teams);
 			Storage.postCrossOriginMessage('T' + packedTeams);
@@ -584,10 +586,101 @@ Storage.loadTeams = function () {
 	this.teams = [];
 	try {
 		if (window.localStorage) {
-			Storage.loadPackedTeams(localStorage.getItem('showdown_teams'));
+			var packedTeams = localStorage.getItem('showdown_teams');
+			Storage.loadPackedTeams(packedTeams);
+			Storage.teamsInStorage = packedTeams;
 		}
 	} catch (e) {}
 };
+
+/**
+ * Several tabs of the client can be open at once (say, a tab left disconnected
+ * after a server restart, and a fresh one), and each tab saves its whole team
+ * list. A tab that hadn't seen another tab's changes would erase the teams the
+ * other tab added the next time it saved. So when another tab saves, this tab
+ * reloads its list (keeping the team it's editing), and it checks again right
+ * before saving.
+ *
+ * `teamsInStorage` is what this tab last read from or wrote to localStorage
+ * (undefined: teams aren't kept in this origin's localStorage).
+ */
+Storage.teamsInStorage = undefined;
+
+Storage.syncTeams = function (packedTeams) {
+	var newTeams;
+	try {
+		newTeams = Storage.unpackAllTeams(packedTeams);
+	} catch (e) {
+		return false;
+	}
+	var oldTeams = (Storage.teams || []).slice();
+	var sameTeam = function (a, b) {
+		return a.name === b.name && a.format === b.format &&
+			(a.folder || '') === (b.folder || '') && a.capacity === b.capacity;
+	};
+	var findTeam = function (list, team, preferredIndex) {
+		if (!team) return -1;
+		var i = list.indexOf(team);
+		if (i >= 0) return i;
+		if (list[preferredIndex] && sameTeam(list[preferredIndex], team)) return preferredIndex;
+		for (i = 0; i < list.length; i++) {
+			if (sameTeam(list[i], team)) return i;
+		}
+		return -1;
+	};
+
+	// The team open in this tab's teambuilder: this tab's version wins.
+	var teambuilder = window.app && app.rooms && app.rooms.teambuilder;
+	var editing = teambuilder && teambuilder.curTeam;
+	if (editing) {
+		var oldIndex = oldTeams.indexOf(editing);
+		var j = findTeam(newTeams, editing, oldIndex);
+		if (j >= 0) {
+			newTeams[j] = editing;
+		} else {
+			newTeams.splice(Math.max(0, Math.min(oldIndex, newTeams.length)), 0, editing);
+		}
+	}
+
+	// Team selectors (main menu, tournaments) remember their team by index.
+	var selectors = [];
+	if (window.app && app.rooms) {
+		for (var roomid in app.rooms) {
+			var room = app.rooms[roomid];
+			var selector = room.id === '' ? room : room.tournamentBox;
+			if (selector && typeof selector.curTeamIndex === 'number' && selector.curTeamIndex >= 0) {
+				selectors.push([selector, oldTeams[selector.curTeamIndex], selector.curTeamIndex]);
+			}
+		}
+	}
+
+	// Replace the list in place: the teambuilder keeps a reference to it.
+	if (!Storage.teams) Storage.teams = [];
+	Storage.teams.length = 0;
+	Array.prototype.push.apply(Storage.teams, newTeams);
+	Storage.teamsInStorage = packedTeams;
+
+	for (var k = 0; k < selectors.length; k++) {
+		selectors[k][0].curTeamIndex = findTeam(Storage.teams, selectors[k][1], selectors[k][2]);
+	}
+	if (teambuilder) {
+		if (editing) {
+			teambuilder.curTeamIndex = Storage.teams.indexOf(editing);
+		} else if (!teambuilder.exportMode) {
+			teambuilder.update();
+		}
+	}
+	if (window.app && app.user) app.user.trigger('saveteams');
+	return true;
+};
+
+if (window.addEventListener) {
+	window.addEventListener('storage', function (e) {
+		if (e.key !== 'showdown_teams' || Storage.teamsInStorage === undefined) return;
+		if (e.newValue === Storage.teamsInStorage) return;
+		Storage.syncTeams(e.newValue || '');
+	});
+}
 
 /** returns false to add the team, true to not add it, 'rename' to add it under a diff name */
 Storage.compareTeams = function (serverTeam, localTeam) {
@@ -677,7 +770,15 @@ Storage.loadPackedTeams = function (buffer) {
 Storage.saveTeams = function () {
 	try {
 		if (window.localStorage) {
-			localStorage.setItem('showdown_teams', Storage.packAllTeams(this.teams));
+			// Another tab saved since this tab last loaded or saved (and this tab
+			// missed the storage event): pick up its teams first.
+			var current = localStorage.getItem('showdown_teams');
+			if (Storage.teamsInStorage !== undefined && current !== Storage.teamsInStorage) {
+				Storage.syncTeams(current || '');
+			}
+			var packedTeams = Storage.packAllTeams(Storage.teams);
+			localStorage.setItem('showdown_teams', packedTeams);
+			Storage.teamsInStorage = packedTeams;
 			Storage.cantSave = false;
 		}
 	} catch (e) {

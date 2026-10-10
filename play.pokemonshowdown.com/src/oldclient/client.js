@@ -854,6 +854,14 @@ function toId() {
 						app.hostCheckInterval = setTimeout(checkHost, 500);
 					}
 				}, 500);
+
+				// Keep-alive every 4 minutes: hosts like Render's free plan shut the
+				// server down after 15 minutes without incoming messages, even with
+				// players connected (the server ignores this message).
+				clearInterval(self.keepAliveInterval);
+				self.keepAliveInterval = setInterval(function () {
+					if (self.socket && self.socket.readyState === 1) self.socket.send('|/keepalive');
+				}, 4 * 60 * 1000);
 			};
 			this.socket.onmessage = function (msg) {
 				if (window.console && console.log) {
@@ -869,6 +877,7 @@ function toId() {
 				return s;
 			};
 			this.socket.onclose = function () {
+				clearInterval(self.keepAliveInterval);
 				if (!socketopened) {
 					if (Config.server.altport && !altport) {
 						altport = true;

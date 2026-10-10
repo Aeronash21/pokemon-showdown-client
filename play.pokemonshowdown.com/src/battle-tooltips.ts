@@ -2151,6 +2151,9 @@ export class BattleTooltips {
 		const [moveType, category] = this.getMoveType(move, value, forMaxMove);
 
 		const pokemon = value.pokemon;
+		// The move buttons can be drawn before the active Pokémon is on the field
+		// client-side; without this, the error stopped the move buttons appearing.
+		if (!pokemon) return [moveType, ''] as const;
 		let foeActive = [...pokemon.side.foe.active].reverse();
 		if (this.battle.gameType === 'freeforall') {
 			foeActive = [...foeActive, ...pokemon.side.active].filter(active => active !== pokemon);

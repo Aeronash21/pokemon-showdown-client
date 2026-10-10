@@ -852,6 +852,8 @@
 				obj.updateTeams();
 			}
 			this.edit(0);
+			// save right away, so the new team isn't lost if the page reloads before it's edited
+			this.save();
 		},
 		duplicate: function (i) {
 			var newTeam = this.createTeam(i ? teams[i] : null);
@@ -863,6 +865,7 @@
 				obj.curTeamIndex++;
 			}
 			this.edit(0);
+			this.save();
 		},
 		createTeam: function (orig, isBox) {
 			var newTeam;
