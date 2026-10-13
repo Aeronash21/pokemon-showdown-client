@@ -980,20 +980,26 @@ abstract class BattleTypedSearch<T extends SearchType> {
 		}
 		return '' as ID;
 	}
-	/** PokeRogue: every move a species can have. */
+	/**
+	 * PokeRogue: every move a species can have. The PokeRogue formats (not
+	 * Chaos) also allow every move it has learnt in any game.
+	 */
 	pokeRogueMoves(speciesid: ID): Set<ID> {
 		const table = BattleTeambuilderTable['pokerogue'];
 		const id = this.pokeRogueID(speciesid);
+		const allGames = this.pokeRogueFormat.startsWith('pokerogue') && !!table.allGameLearnsets;
+		const key = allGames ? `${id}+` : id;
 		if (!table.decodedLearnsets) table.decodedLearnsets = {};
-		if (!table.decodedLearnsets[id]) {
+		if (!table.decodedLearnsets[key]) {
 			const moves = new Set<ID>();
-			const codes: string = table.learnsets[id] || '';
+			let codes: string = table.learnsets[id] || '';
+			if (allGames) codes += table.allGameLearnsets[id] || '';
 			for (let i = 0; i < codes.length; i += 2) {
 				moves.add(table.moveIds[parseInt(codes.slice(i, i + 2), 36)]);
 			}
-			table.decodedLearnsets[id] = moves;
+			table.decodedLearnsets[key] = moves;
 		}
-		return table.decodedLearnsets[id];
+		return table.decodedLearnsets[key];
 	}
 	/** PokeRogue: a species' four egg moves; the 4th is the rare egg move. */
 	pokeRogueEggMoves(speciesid: ID): ID[] {

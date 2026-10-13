@@ -1228,6 +1228,9 @@ process.stdout.write("Building `data/teambuilder-tables.js`... ");
 			moveIds: [],
 			// species id -> move list, each move as 2 base-36 characters (index into moveIds)
 			learnsets: {},
+			// species id -> moves learnt in any game that aren't in its PokeRogue move list (same
+			// encoding); PokeRogue formats with the "PokeRogue All Moves" rule allow them, Chaos doesn't
+			allGameLearnsets: {},
 			// species id -> [egg move, egg move, egg move, rare egg move]
 			eggMoves: {},
 			// species id -> passive ability name
@@ -1259,6 +1262,19 @@ process.stdout.write("Building `data/teambuilder-tables.js`... ");
 				codes += moveIndex.get(moveid).toString(36).padStart(2, '0');
 			}
 			table.learnsets[species.id] = codes;
+		}
+		for (const species of prSpecies) {
+			const extra = prDex.data.Learnsets[species.id]?.allGameMoves;
+			if (!extra) continue;
+			let codes = '';
+			for (const moveid of extra.split(' ')) {
+				if (!moveIndex.has(moveid)) {
+					moveIndex.set(moveid, table.moveIds.length);
+					table.moveIds.push(moveid);
+				}
+				codes += moveIndex.get(moveid).toString(36).padStart(2, '0');
+			}
+			table.allGameLearnsets[species.id] = codes;
 		}
 		if (table.moveIds.length > 36 * 36) throw new Error(`Too many PokeRogue moves for 2-character codes`);
 
