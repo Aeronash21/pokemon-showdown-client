@@ -20,7 +20,7 @@ Config.whitelist = [
 // address bar is `Config.routes.client`.
 Config.defaultserver = {
 	id: 'ndsharedpower',
-	host: 'pokemon-showdown-3-nhvf.onrender.com',
+	host: 'pokemon-showdown-2-b8yj.onrender.com',
 	port: 443,
 	httpport: 80,
 	altport: 80,
