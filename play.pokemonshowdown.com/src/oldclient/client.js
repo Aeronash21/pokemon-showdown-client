@@ -1428,7 +1428,11 @@ function toId() {
 							teambuilderFormat = toID(teambuilderFormatName);
 							if (teambuilderFormat.startsWith('gen8nd')) teambuilderFormat = 'gen8nationaldex' + teambuilderFormat.slice(6);
 							if (teambuilderFormat.startsWith('gen8natdex')) teambuilderFormat = 'gen8nationaldex' + teambuilderFormat.slice(10);
-							if (BattleFormats[teambuilderFormat]) {
+							if (BattleFormats[teambuilderFormat] && BattleFormats[teambuilderFormat].team) {
+								// "X (Y)" isn't a variation of X when X uses generated teams: e.g. PokeRogue 2v2
+								// (Bring 6 Pick 3) vs. the random PokeRogue 2v2. It keeps its own teambuilder format.
+								teambuilderFormat = '';
+							} else if (BattleFormats[teambuilderFormat]) {
 								BattleFormats[teambuilderFormat].isTeambuilderFormat = true;
 							} else {
 								BattleFormats[teambuilderFormat] = {
@@ -1442,7 +1446,7 @@ function toId() {
 									effectType: 'Format'
 								};
 							}
-							isTeambuilderFormat = false;
+							if (teambuilderFormat) isTeambuilderFormat = false;
 						}
 					}
 					if (BattleFormats[id] && BattleFormats[id].isTeambuilderFormat) {

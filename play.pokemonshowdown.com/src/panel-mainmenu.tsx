@@ -317,7 +317,11 @@ export class MainMenuRoom extends PSRoom {
 					}
 					if (teambuilderFormatName !== name) {
 						teambuilderFormat = toID(teambuilderFormatName);
-						if (BattleFormats[teambuilderFormat]) {
+						if (BattleFormats[teambuilderFormat]?.team) {
+							// "X (Y)" isn't a variation of X when X uses generated teams: e.g. PokeRogue 2v2
+							// (Bring 6 Pick 3) vs. the random PokeRogue 2v2. It keeps its own teambuilder format.
+							teambuilderFormat = '' as ID;
+						} else if (BattleFormats[teambuilderFormat]) {
 							BattleFormats[teambuilderFormat].isTeambuilderFormat = true;
 						} else {
 							BattleFormats[teambuilderFormat] = {
@@ -331,7 +335,7 @@ export class MainMenuRoom extends PSRoom {
 								effectType: 'Format',
 							};
 						}
-						isTeambuilderFormat = false;
+						if (teambuilderFormat) isTeambuilderFormat = false;
 					}
 				}
 				if (BattleFormats[id]?.isTeambuilderFormat) {
