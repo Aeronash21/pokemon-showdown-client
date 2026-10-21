@@ -2971,7 +2971,7 @@
 			if (!transformed && item.megaStone) transformed = item.megaStone[start.name] || item.megaStone[start.baseSpecies] || '';
 			// Chaos (Mix and Mega): any Mega Stone, and the Mega's passive comes with it
 			if (!transformed && item.megaStone && isChaosFormat(this.curTeam.format) &&
-				item.id !== 'galaricawreath' && item.id !== 'maxmushrooms') {
+				item.id !== 'maxmushrooms') {
 				for (var megaName in item.megaStone) {
 					transformed = item.megaStone[megaName];
 					break;
@@ -3077,7 +3077,7 @@
 				buf += '</div></div>';
 
 				// Chaos has Dynamax: the Gigantamax factor (Charizard-Gmax picked as a species
-				// is Charizard holding Galarica Wreath, as in PokeRogue)
+				// is Charizard holding Max Mushrooms, as in PokeRogue)
 				if (isChaosFormat(this.curTeam.format) && species.canGigantamax) {
 					buf += '<div class="formrow"><label class="formlabel" title="Gigantamax when it Dynamaxes">Gigantamax:</label><div>';
 					buf += '<label class="checkbox inline"><input type="radio" name="gigantamax" value="yes"' + (set.gigantamax ? ' checked' : '') + ' /> Yes</label> ';

@@ -469,6 +469,11 @@ export interface TeambuilderSpriteData {
 	url?: string;
 }
 
+/** Item icons this client has its own image for, in sprites-custom/items/ (PokéRogue's Max Mushrooms) */
+const CUSTOM_ITEM_ICONS: { [itemid: string]: string } = {
+	maxmushrooms: 'maxmushrooms.png',
+};
+
 export const Dex = new class implements ModdedDex {
 	readonly Ability = Ability;
 	readonly Item = Item;
@@ -506,14 +511,14 @@ export const Dex = new class implements ModdedDex {
 	 * this Pokémon (play.pokemonshowdown.com/sprites-variants/variants.js).
 	 */
 	getShinyVariantSprite(speciesid: string, variant: number | undefined, female: boolean, front: boolean) {
-		if (variant !== 2 && variant !== 3 || !this.variantPrefix) return null;
+		if (variant !== 2 && variant !== 3 || !Dex.variantPrefix) return null;
 		const entry = (window as any).ShinyVariantSprites?.[speciesid];
 		const femaleSizes: number[] | undefined = female ? entry?.[`${variant}f`] : undefined;
 		const sizes: number[] | undefined = femaleSizes || entry?.[variant];
 		if (!sizes) return null;
 		const dir = (variant === 2 ? 'rare' : 'epic') + (front ? '' : '-back');
 		return {
-			url: `${this.variantPrefix}${dir}/${speciesid}${femaleSizes ? '-f' : ''}.png`,
+			url: `${Dex.variantPrefix}${dir}/${speciesid}${femaleSizes ? '-f' : ''}.png`,
 			w: front ? sizes[0] : sizes[2],
 			h: front ? sizes[1] : sizes[3],
 		};
@@ -1105,7 +1110,7 @@ export const Dex = new class implements ModdedDex {
 
 		// PokéRogue's Rare / Epic shiny variants
 		const variantSprite = options.shiny ?
-			this.getShinyVariantSprite(species.id, options.variant, options.gender === 'F', isFront) : null;
+			Dex.getShinyVariantSprite(species.id, options.variant, options.gender === 'F', isFront) : null;
 		if (variantSprite) {
 			spriteData.url = variantSprite.url;
 			spriteData.w = variantSprite.w;
@@ -1224,7 +1229,7 @@ export const Dex = new class implements ModdedDex {
 		}
 		// PokéRogue's Rare / Epic shiny variants (centred where a 96x96 sprite would go)
 		const variantSprite = pokemon.shiny ?
-			this.getShinyVariantSprite(species.id, pokemon.variant, pokemon.gender === 'F', true) : null;
+			Dex.getShinyVariantSprite(species.id, pokemon.variant, pokemon.gender === 'F', true) : null;
 		if (variantSprite) {
 			return {
 				spriteid,
@@ -1301,6 +1306,11 @@ export const Dex = new class implements ModdedDex {
 
 	getItemIcon(item: any) {
 		let num = 0;
+		const customIcon = CUSTOM_ITEM_ICONS[toID(typeof item === 'string' ? item : item?.id || item?.name)];
+		const sitePrefix = Dex.variantPrefix.replace(/sprites-variants\/$/, '');
+		if (customIcon && sitePrefix) {
+			return `background:transparent url(${sitePrefix}sprites-custom/items/${customIcon}) no-repeat scroll 0px 0px`;
+		}
 		if (typeof item === 'string' && window.BattleItems) item = window.BattleItems[toID(item)];
 		if (item?.spritenum) num = item.spritenum;
 
