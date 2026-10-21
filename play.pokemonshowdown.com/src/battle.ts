@@ -86,6 +86,8 @@ export class Pokemon implements PokemonDetails, PokemonHealth {
 	level = 100;
 	gender: Dex.GenderName = 'N';
 	shiny = false;
+	/** PokéRogue shiny variant: 2 = Rare, 3 = Epic, 0 = none (from the `[variant]` tag on switch-ins) */
+	shinyVariant = 0;
 
 	hpcolor: HPColor = 'g';
 	moves: string[] = [];
@@ -3760,6 +3762,7 @@ export class Battle {
 				const details = set.species + (!set.level || set.level === 100 ? '' : `, L${set.level}`) +
 					(!set.gender || set.gender === 'N' ? '' : `, ${set.gender}`) + (set.shiny ? ', shiny' : '');
 				const pokemon = side.addPokemon('', '', details);
+				if (set.shiny && set.variant) pokemon.shinyVariant = set.variant;
 				if (set.item) pokemon.item = set.item;
 				if (set.ability) pokemon.rememberAbility(set.ability);
 				for (const move of set.moves) {
@@ -3775,6 +3778,7 @@ export class Battle {
 			this.endLastTurn();
 			let poke = this.getSwitchedPokemon(args[1], args[2]);
 			let slot = poke.slot;
+			poke.shinyVariant = parseInt(kwArgs.variant, 10) || 0;
 			poke.healthParse(args[3]);
 			poke.removeVolatile('itemremoved' as ID);
 			poke.terastallized = (/tera:([a-z]+)$/i.exec(args[2]))?.[1] || '';

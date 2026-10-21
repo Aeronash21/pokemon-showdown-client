@@ -8,6 +8,18 @@
 	 * Chaos (gen9chaos...: PokeRogue + Mix and Mega + Shared Power), which also
 	 * has Dynamax (the Gigantamax factor).
 	 */
+	/** PokéRogue's shiny variants (Rare = 2, Epic = 3) that have sprites for this Pokémon */
+	function shinyVariantsFor(species) {
+		var entry = window.ShinyVariantSprites && species && window.ShinyVariantSprites[species.id];
+		if (!entry) return [];
+		return [2, 3].filter(function (variant) { return !!entry[variant]; });
+	}
+	/** "No" / "Yes", or in PokéRogue formats "No" / "Common" / "Rare" / "Epic" */
+	function shinyLabel(set, format) {
+		if (!set.shiny) return 'No';
+		if (!isPokeRogueFormat(format)) return 'Yes';
+		return set.variant === 3 ? 'Epic' : set.variant === 2 ? 'Rare' : 'Common';
+	}
 	function isPokeRogueFormat(format) {
 		return !!format && (format.includes('pokerogue') || /^(gen9)?chaos/.test(format));
 	}
@@ -1357,7 +1369,7 @@
 				} else if (this.curTeam.gen < 8 || isNatDex) {
 					buf += '<span class="detailcell"><label>Happiness</label>' + (typeof set.happiness === 'number' ? set.happiness : 255) + '</span>';
 				}
-				buf += '<span class="detailcell"><label>Shiny</label>' + (set.shiny ? 'Yes' : 'No') + '</span>';
+				buf += '<span class="detailcell"><label>Shiny</label>' + shinyLabel(set, this.curTeam.format) + '</span>';
 				if (!isLetsGo && this.curTeam.gen < 9) {
 					if (this.curTeam.gen === 8 && !isNatDex) {
 						if (isBDSP && species.baseSpecies === "Unown") {
@@ -3048,8 +3060,20 @@
 				}
 
 				buf += '<div class="formrow"><label class="formlabel">Shiny:</label><div>';
-				buf += '<label class="checkbox inline"><input type="radio" name="shiny" value="yes"' + (set.shiny ? ' checked' : '') + ' /> Yes</label> ';
-				buf += '<label class="checkbox inline"><input type="radio" name="shiny" value="no"' + (!set.shiny ? ' checked' : '') + ' /> No</label>';
+				if (isPokeRogueFormat(this.curTeam.format)) {
+					// PokéRogue's shiny tiers: Common (a normal shiny), and Rare / Epic variants where they exist
+					var variants = shinyVariantsFor(species);
+					var shinyValue = !set.shiny ? 'no' : set.variant === 3 ? 'epic' : set.variant === 2 ? 'rare' : 'common';
+					var shinyOptions = [['no', 'No'], ['common', 'Common']];
+					if (variants.indexOf(2) >= 0 || shinyValue === 'rare') shinyOptions.push(['rare', 'Rare']);
+					if (variants.indexOf(3) >= 0 || shinyValue === 'epic') shinyOptions.push(['epic', 'Epic']);
+					for (var k = 0; k < shinyOptions.length; k++) {
+						buf += '<label class="checkbox inline"><input type="radio" name="shiny" value="' + shinyOptions[k][0] + '"' + (shinyValue === shinyOptions[k][0] ? ' checked' : '') + ' /> ' + shinyOptions[k][1] + '</label> ';
+					}
+				} else {
+					buf += '<label class="checkbox inline"><input type="radio" name="shiny" value="yes"' + (set.shiny ? ' checked' : '') + ' /> Yes</label> ';
+					buf += '<label class="checkbox inline"><input type="radio" name="shiny" value="no"' + (!set.shiny ? ' checked' : '') + ' /> No</label>';
+				}
 				buf += '</div></div>';
 
 				// Chaos has Dynamax: the Gigantamax factor (Charizard-Gmax picked as a species
@@ -3151,12 +3175,20 @@
 			set.happiness = happiness;
 			if (set.happiness === 255) delete set.happiness;
 
-			// shiny
-			var shiny = (this.$chart.find('input[name=shiny]:checked').val() === 'yes');
-			if (shiny) {
+			// shiny ('yes', or in PokéRogue formats 'common' / 'rare' / 'epic')
+			var shinyChoice = this.$chart.find('input[name=shiny]:checked').val();
+			if (shinyChoice && shinyChoice !== 'no') {
 				set.shiny = true;
+				if (shinyChoice === 'rare') {
+					set.variant = 2;
+				} else if (shinyChoice === 'epic') {
+					set.variant = 3;
+				} else {
+					delete set.variant;
+				}
 			} else {
 				delete set.shiny;
+				delete set.variant;
 			}
 
 			// dynamax level
@@ -3228,7 +3260,7 @@
 				} else {
 					if (this.curTeam.gen < 8 || isNatDex) buf += '<span class="detailcell"><label>Happiness</label>' + (typeof set.happiness === 'number' ? set.happiness : 255) + '</span>';
 				}
-				buf += '<span class="detailcell"><label>Shiny</label>' + (set.shiny ? 'Yes' : 'No') + '</span>';
+				buf += '<span class="detailcell"><label>Shiny</label>' + shinyLabel(set, this.curTeam.format) + '</span>';
 				if (!isLetsGo && (this.curTeam.gen < 8 || isNatDex)) buf += '<span class="detailcell"><label>HP Type</label>' + (set.hpType || 'Dark') + '</span>';
 				if (this.curTeam.gen === 8 && !isBDSP) {
 					if (!species.cannotDynamax) {
@@ -3498,6 +3530,7 @@
 				set.gender = 'F';
 				if (set.happiness) delete set.happiness;
 				if (set.shiny) delete set.shiny;
+				if (set.variant) delete set.variant;
 				if (set.dynamaxLevel) delete set.dynamaxLevel;
 				if (set.gigantamax) delete set.gigantamax;
 				set.item = 'Starf Berry';
@@ -3532,6 +3565,7 @@
 				}
 				if (set.happiness) delete set.happiness;
 				if (set.shiny) delete set.shiny;
+				if (set.variant) delete set.variant;
 				if (set.dynamaxLevel) delete set.dynamaxLevel;
 				if (set.gigantamax) delete set.gigantamax;
 				set.item = 'Leftovers';
@@ -3772,6 +3806,7 @@
 			if (species.gender && species.gender !== 'N') set.gender = species.gender;
 			if (set.happiness) delete set.happiness;
 			if (set.shiny) delete set.shiny;
+			if (set.variant) delete set.variant;
 			if (set.dynamaxLevel) delete set.dynamaxLevel;
 			if (set.gigantamax) delete set.gigantamax;
 			if (set.teraType) delete set.teraType;

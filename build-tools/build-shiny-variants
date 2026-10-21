@@ -1,0 +1,143 @@
+#!/usr/bin/env node
+/**
+ * Builds play.pokemonshowdown.com/sprites-variants/: PokéRogue's Rare and Epic
+ * shiny variant sprites (front and back) for every Pokémon that has them, and
+ * variants.js, which tells the client which ones exist and their sizes.
+ *
+ * The sprites come from Sandstormer's PokeRogue SearchDex
+ * (https://github.com/Sandstormer/PokeRogue-Dex), which has them as images
+ * named <dex number>[-<form>]_<variant>[f][b].png (variant 2 = Rare,
+ * 3 = Epic; f = female, b = back). Images and data are PokéRogue's
+ * (https://github.com/pagefaultgames/pokerogue); rights stay with their creators.
+ *
+ * Usage: node build-tools/build-shiny-variants PATH/TO/PokeRogue-Dex [PATH/TO/built/pokemon-showdown]
+ * (the server checkout needs `node build` run, for its dist/ folder)
+ */
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+const vm = require('vm');
+
+const dexDir = process.argv[2];
+const serverDir = path.resolve(process.argv[3] || path.join(__dirname, '../caches/pokemon-showdown'));
+if (!dexDir) {
+	console.error('Usage: node build-tools/build-shiny-variants PATH/TO/PokeRogue-Dex [PATH/TO/pokemon-showdown]');
+	process.exit(1);
+}
+const outDir = path.join(__dirname, '../play.pokemonshowdown.com/sprites-variants');
+const { Dex, toID } = require(path.join(serverDir, 'dist/sim/dex'));
+const dex = Dex.mod('pokerogue');
+
+// ---------------------------------------------------------------------------
+// The SearchDex's species list: image key, dex number, English name
+
+const items = vm.runInNewContext(fs.readFileSync(path.join(dexDir, 'pokedex_data.js'), 'utf8') + ';items');
+const langSrc = fs.readFileSync(path.join(dexDir, 'lang/en.js'), 'utf8');
+const names = vm.runInNewContext(/speciesNames = (\[[\s\S]*?\]);/.exec(langSrc)[1]);
+if (items.length !== names.length) throw new Error(`pokedex_data.js and lang/en.js don't match`);
+const files = new Set(fs.readdirSync(path.join(dexDir, 'images')));
+
+// ---------------------------------------------------------------------------
+// Image key -> Showdown species
+
+const FORM_NAMES = {
+	gigantamax: 'gmax', partner: 'starter', 'cool-cosplay': 'rockstar', 'beauty-cosplay': 'belle',
+	'cute-cosplay': 'popstar', 'smart-cosplay': 'phd', 'tough-cosplay': 'libre',
+};
+const OVERRIDES = {
+	'2038': 'ninetalesalola', '2658': 'greninjabond', '2658-ash': 'greninjaash', '8901': 'ursalunabloodmoon',
+	'2670-mega': 'floettemega', '892-gigantamax-single': 'urshifugmax', '892-gigantamax-rapid': 'urshifurapidstrikegmax',
+	'678-mega': 'meowsticmmega', '978-mega-curly': 'tatsugiricurlymega', '978-mega-droopy': 'tatsugiridroopymega',
+	'978-mega-stretchy': 'tatsugiristretchymega', '172-spiky': 'pichuspikyeared', '774-red-meteor': 'miniormeteor',
+	'678-female': 'meowsticf', '876-female': 'indeedeef',
+};
+const byNum = new Map();
+for (const species of dex.species.all()) {
+	if (!species.exists || species.num <= 0) continue;
+	if (!byNum.has(species.num)) byNum.set(species.num, []);
+	byNum.get(species.num).push(species);
+}
+function findSpecies(item, name) {
+	const key = String(item.img);
+	if (OVERRIDES[key]) return dex.species.get(OVERRIDES[key]);
+	const form = key.split('-').slice(1).join('-');
+	const candidates = byNum.get(item.dex) || [];
+	const base = candidates.find(species => !species.forme);
+	if (!form) {
+		if (base) return base;
+	} else {
+		const wanted = toID(FORM_NAMES[form] || form);
+		const forme = candidates.find(species => toID(species.forme) === wanted);
+		if (forme) return forme;
+		// cosmetic formes (Vivillon patterns, Unown letters...)
+		const cosmetic = base?.cosmeticFormes?.find(cosmeticForme => toID(cosmeticForme) === base.id + wanted);
+		if (cosmetic) return { id: toID(cosmetic), name: cosmetic };
+		// PokéRogue names the default form (Altered Giratina, Plant Burmy...)
+		if (base && toID(base.baseForme) === wanted) return base;
+	}
+	// regional forms have their own numbers in PokéRogue ("Alola Raichu" is 2026)
+	const byName = dex.species.get(name);
+	return byName.exists ? byName : null;
+}
+
+// ---------------------------------------------------------------------------
+// Copy the images and record their sizes
+
+function pngSize(file) {
+	const buf = fs.readFileSync(file);
+	if (buf.readUInt32BE(12) !== 0x49484452) throw new Error(`${file} isn't a PNG`); // IHDR
+	return [buf.readUInt32BE(16), buf.readUInt32BE(20)];
+}
+
+fs.rmSync(outDir, { recursive: true, force: true });
+const TIER_DIRS = { 2: 'rare', 3: 'epic' };
+for (const tier of Object.values(TIER_DIRS)) {
+	fs.mkdirSync(path.join(outDir, tier), { recursive: true });
+	fs.mkdirSync(path.join(outDir, tier + '-back'), { recursive: true });
+}
+
+const variants = {};
+const skipped = [];
+let copied = 0;
+items.forEach((item, i) => {
+	const key = String(item.img);
+	const tiers = [2, 3].filter(tier => files.has(`${key}_${tier}.png`) && files.has(`${key}_${tier}b.png`));
+	if (!tiers.length) return;
+	const species = findSpecies(item, names[i]);
+	if (!species) return void skipped.push(`${key} (${names[i]})`);
+	if (variants[species.id]) return; // same picture under another name (Scatterbug patterns, Pumpkaboo sizes...)
+	const entry = variants[species.id] = {};
+	for (const tier of tiers) {
+		for (const female of ['', 'f']) {
+			const front = path.join(dexDir, 'images', `${key}_${tier}${female}.png`);
+			const back = path.join(dexDir, 'images', `${key}_${tier}${female}b.png`);
+			if (!fs.existsSync(front) || !fs.existsSync(back)) continue;
+			const fileName = species.id + (female ? '-f' : '') + '.png';
+			fs.copyFileSync(front, path.join(outDir, TIER_DIRS[tier], fileName));
+			fs.copyFileSync(back, path.join(outDir, TIER_DIRS[tier] + '-back', fileName));
+			entry[tier + female] = [...pngSize(front), ...pngSize(back)];
+			copied += 2;
+		}
+	}
+});
+
+fs.writeFileSync(path.join(outDir, 'variants.js'),
+	`// PokéRogue shiny variants: Rare ("2") and Epic ("3") sprites, "f" = female.\n` +
+	`// [front width, front height, back width, back height]. Built by build-tools/build-shiny-variants.\n` +
+	`// Sprites from PokéRogue (https://pokerogue.net, https://github.com/pagefaultgames/pokerogue) via\n` +
+	`// Sandstormer's PokeRogue SearchDex (https://github.com/Sandstormer/PokeRogue-Dex).\n` +
+	`// All rights to the sprites stay with their original creators.\n` +
+	`window.ShinyVariantSprites = ${JSON.stringify(variants)};\n`);
+
+fs.writeFileSync(path.join(outDir, 'README.md'),
+	`# PokéRogue shiny variant sprites\n\n` +
+	`Rare (\`rare/\`, \`rare-back/\`) and Epic (\`epic/\`, \`epic-back/\`) shiny variants, named by Showdown species ID ` +
+	`(\`-f\` = female). \`variants.js\` lists which exist and their sizes.\n\n` +
+	`Made by \`build-tools/build-shiny-variants\`; don't edit by hand.\n\n` +
+	`Sprites from [PokéRogue](https://pokerogue.net) ([GitHub](https://github.com/pagefaultgames/pokerogue)), ` +
+	`via Sandstormer's [PokeRogue SearchDex](https://github.com/Sandstormer/PokeRogue-Dex). ` +
+	`All rights to the sprites stay with their original creators.\n`);
+
+console.log(`${Object.keys(variants).length} Pokémon, ${copied} sprites`);
+if (skipped.length) console.log(`No Showdown match (skipped): ${skipped.join(', ')}`);

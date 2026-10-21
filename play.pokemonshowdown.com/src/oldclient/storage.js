@@ -955,9 +955,9 @@ Storage.packTeam = function (team) {
 			buf += ivs;
 		}
 
-		// shiny
+		// shiny (S, or S2 / S3 for PokéRogue's Rare / Epic variants)
 		if (set.shiny) {
-			buf += '|S';
+			buf += '|S' + (set.variant === 2 || set.variant === 3 ? set.variant : '');
 		} else {
 			buf += '|';
 		}
@@ -1081,7 +1081,11 @@ Storage.fastUnpackTeam = function (buf) {
 
 		// shiny
 		j = buf.indexOf('|', i);
-		if (i !== j) set.shiny = true;
+		if (i !== j) {
+			set.shiny = true;
+			var variant = buf.substring(i + 1, j);
+			if (variant === '2' || variant === '3') set.variant = Number(variant);
+		}
 		i = j + 1;
 
 		// level
@@ -1205,7 +1209,11 @@ Storage.unpackTeam = function (buf) {
 
 		// shiny
 		j = buf.indexOf('|', i);
-		if (i !== j) set.shiny = true;
+		if (i !== j) {
+			set.shiny = true;
+			var variant = buf.substring(i + 1, j);
+			if (variant === '2' || variant === '3') set.variant = Number(variant);
+		}
 		i = j + 1;
 
 		// level
@@ -1394,8 +1402,12 @@ Storage.importTeam = function (buffer, teams) {
 		} else if (line.substr(0, 9) === 'Ability: ') {
 			line = line.substr(9);
 			curSet.ability = line;
-		} else if (line === 'Shiny: Yes') {
+		} else if (line === 'Shiny: Yes' || line === 'Shiny: Common') {
 			curSet.shiny = true;
+		} else if (line === 'Shiny: Rare' || line === 'Shiny: Epic') {
+			// PokéRogue's shiny variants
+			curSet.shiny = true;
+			curSet.variant = line === 'Shiny: Rare' ? 2 : 3;
 		} else if (line.substr(0, 7) === 'Level: ') {
 			line = line.substr(7);
 			curSet.level = +line;
@@ -1526,7 +1538,7 @@ Storage.exportTeam = function (team, hidestats) {
 			text += 'Level: ' + curSet.level + "  \n";
 		}
 		if (curSet.shiny) {
-			text += 'Shiny: Yes  \n';
+			text += 'Shiny: ' + (curSet.variant === 3 ? 'Epic' : curSet.variant === 2 ? 'Rare' : 'Yes') + '  \n';
 		}
 		if (typeof curSet.happiness === 'number' && curSet.happiness !== 255 && !isNaN(curSet.happiness)) {
 			text += 'Happiness: ' + curSet.happiness + "  \n";

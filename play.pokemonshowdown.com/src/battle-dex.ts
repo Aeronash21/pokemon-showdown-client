@@ -465,6 +465,8 @@ export interface TeambuilderSpriteData {
 	spriteid: string;
 	shiny?: boolean;
 	pixelated?: boolean;
+	/** full image URL (PokéRogue shiny variant sprites) */
+	url?: string;
 }
 
 export const Dex = new class implements ModdedDex {
@@ -492,6 +494,30 @@ export const Dex = new class implements ModdedDex {
 		if (window.document?.location?.protocol !== 'http:') prefix = 'https:';
 		return `${prefix}//${window.Config ? Config.routes.client : 'play.pokemonshowdown.com'}/`;
 	})();
+
+	/** PokéRogue shiny variant sprites: on this client's own site (see build-tools/build-shiny-variants) */
+	variantPrefix = (() => {
+		const location = window.document?.location;
+		return location?.host ? `${location.protocol}//${location.host}/sprites-variants/` : '';
+	})();
+
+	/**
+	 * A PokéRogue Rare (2) / Epic (3) shiny variant sprite, if there is one for
+	 * this Pokémon (play.pokemonshowdown.com/sprites-variants/variants.js).
+	 */
+	getShinyVariantSprite(speciesid: string, variant: number | undefined, female: boolean, front: boolean) {
+		if (variant !== 2 && variant !== 3 || !this.variantPrefix) return null;
+		const entry = (window as any).ShinyVariantSprites?.[speciesid];
+		const femaleSizes: number[] | undefined = female ? entry?.[`${variant}f`] : undefined;
+		const sizes: number[] | undefined = femaleSizes || entry?.[variant];
+		if (!sizes) return null;
+		const dir = (variant === 2 ? 'rare' : 'epic') + (front ? '' : '-back');
+		return {
+			url: `${this.variantPrefix}${dir}/${speciesid}${femaleSizes ? '-f' : ''}.png`,
+			w: front ? sizes[0] : sizes[2],
+			h: front ? sizes[1] : sizes[3],
+		};
+	}
 
 	fxPrefix = (() => {
 		const protocol = (window.document?.location?.protocol !== 'http:') ? 'https:' : '';
@@ -917,6 +943,8 @@ export const Dex = new class implements ModdedDex {
 		noScale?: boolean,
 		mod?: string,
 		dynamax?: boolean,
+		/** PokéRogue shiny variant: 2 = Rare, 3 = Epic */
+		variant?: number,
 	} = { gen: 6 }) {
 		const mechanicsGen = options.gen || 6;
 		let isDynamax = !!options.dynamax;
@@ -924,9 +952,11 @@ export const Dex = new class implements ModdedDex {
 			if (pokemon.volatiles.transform) {
 				options.shiny = pokemon.volatiles.transform[2];
 				options.gender = pokemon.volatiles.transform[3];
+				options.variant = pokemon.volatiles.transform[1]?.shinyVariant;
 			} else {
 				options.shiny = pokemon.shiny;
 				options.gender = pokemon.gender;
+				options.variant = pokemon.shinyVariant;
 			}
 			let isGigantamax = false;
 			if (pokemon.volatiles.dynamax) {
@@ -1073,6 +1103,16 @@ export const Dex = new class implements ModdedDex {
 			spriteData.url += dir + '/' + name + '.png';
 		}
 
+		// PokéRogue's Rare / Epic shiny variants
+		const variantSprite = options.shiny ?
+			this.getShinyVariantSprite(species.id, options.variant, options.gender === 'F', isFront) : null;
+		if (variantSprite) {
+			spriteData.url = variantSprite.url;
+			spriteData.w = variantSprite.w;
+			spriteData.h = variantSprite.h;
+			spriteData.pixelated = true;
+		}
+
 		if (!options.noScale) {
 			if (graphicsGen > 4) {
 				// no scaling
@@ -1182,6 +1222,19 @@ export const Dex = new class implements ModdedDex {
 				y: 5,
 			};
 		}
+		// PokéRogue's Rare / Epic shiny variants (centred where a 96x96 sprite would go)
+		const variantSprite = pokemon.shiny ?
+			this.getShinyVariantSprite(species.id, pokemon.variant, pokemon.gender === 'F', true) : null;
+		if (variantSprite) {
+			return {
+				spriteid,
+				spriteDir: '',
+				url: variantSprite.url,
+				x: 10 + Math.round((96 - variantSprite.w) / 2),
+				y: 5 + Math.round((96 - variantSprite.h) / 2),
+				pixelated: true,
+			};
+		}
 		const spriteData: TeambuilderSpriteData = {
 			spriteid,
 			spriteDir: 'sprites/dex',
@@ -1238,6 +1291,9 @@ export const Dex = new class implements ModdedDex {
 	getTeambuilderSprite(pokemon: any, dex?: ModdedDex, xOffset = 0, yOffset = 0) {
 		if (!pokemon) return '';
 		const data = this.getTeambuilderSpriteData(pokemon, dex);
+		if (data.url) {
+			return `background-image:url(${data.url});background-position:${data.x + xOffset}px ${data.y + yOffset}px;background-repeat:no-repeat`;
+		}
 		const shiny = (data.shiny ? '-shiny' : '');
 		const resize = (data.h ? `background-size:${data.h}px` : '');
 		return `background-image:url(${Dex.resourcePrefix}${data.spriteDir}${shiny}/${data.spriteid}.png);background-position:${data.x + xOffset}px ${data.y + yOffset}px;background-repeat:no-repeat;${resize}`;

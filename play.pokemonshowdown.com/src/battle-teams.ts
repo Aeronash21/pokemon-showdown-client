@@ -28,6 +28,8 @@ export declare namespace Teams {
 		level: number;
 		/** Defaults to no (error if shiny event) */
 		shiny: boolean;
+		/** PokéRogue shiny variant for shiny Pokémon: 2 = Rare, 3 = Epic (unset = a normal shiny, Common) */
+		variant?: number;
 		/** Defaults to 255 unless you have Frustration, in which case 0 */
 		happiness: number;
 		/** Defaults to event required ball, otherwise Poké Ball */
@@ -109,7 +111,7 @@ export const Teams = new class {
 			buf += ivs === '|,,,,,' ? '|' : ivs;
 
 			// shiny
-			buf += `|${set.shiny ? 'S' : ''}`;
+			buf += `|${set.shiny ? `S${set.variant === 2 || set.variant === 3 ? set.variant : ''}` : ''}`;
 
 			// level
 			buf += `|${set.level && set.level !== 100 ? set.level : ''}`;
@@ -240,7 +242,12 @@ export const Teams = new class {
 
 			// shiny
 			j = buf.indexOf('|', i);
-			if (i !== j) set.shiny = true;
+			if (i !== j) {
+				set.shiny = true;
+				// S2 / S3: PokéRogue's Rare / Epic shiny variants
+				const variant = buf.substring(i + 1, j);
+				if (variant === '2' || variant === '3') set.variant = Number(variant);
+			}
 			i = j + 1;
 
 			// level
@@ -385,7 +392,8 @@ export const Teams = new class {
 			text += `Level: ${set.level}\n`;
 		}
 		if (set.shiny) {
-			text += !newFormat ? `Shiny: Yes\n` : `Shiny\n`;
+			const variant = set.variant === 3 ? 'Epic' : set.variant === 2 ? 'Rare' : '';
+			text += !newFormat ? `Shiny: ${variant || 'Yes'}\n` : variant ? `Shiny: ${variant}\n` : `Shiny\n`;
 		}
 		if (typeof set.happiness === 'number' && set.happiness !== 255 && !isNaN(set.happiness)) {
 			text += `Happiness: ${set.happiness}\n`;
@@ -478,8 +486,12 @@ export const Teams = new class {
 			set.name = line.slice(10);
 		} else if (line.startsWith('Species: ')) {
 			set.species = line.slice(9);
-		} else if (line === 'Shiny: Yes' || line === 'Shiny') {
+		} else if (line === 'Shiny: Yes' || line === 'Shiny' || line === 'Shiny: Common') {
 			set.shiny = true;
+		} else if (line === 'Shiny: Rare' || line === 'Shiny: Epic') {
+			// PokéRogue's shiny variants
+			set.shiny = true;
+			set.variant = line === 'Shiny: Rare' ? 2 : 3;
 		} else if (line.startsWith('Level: ')) {
 			set.level = +line.slice(7);
 		} else if (line.startsWith('Happiness: ')) {
