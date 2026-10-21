@@ -154,6 +154,18 @@ function modOnlySpecies() {
 		if (Dex.data.Pokedex[id].isCosmeticForme) continue;
 		generateAlias(id, name, 'pokemon');
 	}
+	// Pokemon only the pokerogue mod has: "segin" and "rsegin" find Revavroom-Segin, and
+	// "starmobile" / "segin starmobile" find the Starmobiles
+	for (const [id, entry] of Object.entries(modOnlySpecies())) {
+		const baseid = toID(entry.baseSpecies);
+		const formeid = toID(entry.forme);
+		index.push(`${formeid} pokemon ${id} ${baseid.length}`);
+		index.push(`${baseid.charAt(0)}${formeid} pokemon ${id} 0`);
+		if (baseid === 'revavroom') {
+			index.push(`starmobile${formeid} pokemon ${id} 0`);
+			index.push(`${formeid}starmobile pokemon ${id} 0`);
+		}
+	}
 	for (const id in Dex.data.Moves) {
 		const name = Dex.data.Moves[id].name;
 		generateAlias(id, name, 'move');
