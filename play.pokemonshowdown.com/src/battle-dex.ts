@@ -507,16 +507,21 @@ export const Dex = new class implements ModdedDex {
 	})();
 
 	/**
-	 * A PokéRogue Rare (2) / Epic (3) shiny variant sprite, if there is one for
-	 * this Pokémon (play.pokemonshowdown.com/sprites-variants/variants.js).
+	 * A PokéRogue sprite from play.pokemonshowdown.com/sprites-variants/ (variants.js), if
+	 * there is one: a Rare (2) / Epic (3) shiny variant, or the normal / shiny sprite of a
+	 * Pokémon that only PokéRogue has (the Starmobiles).
 	 */
-	getShinyVariantSprite(speciesid: string, variant: number | undefined, female: boolean, front: boolean) {
-		if (variant !== 2 && variant !== 3 || !Dex.variantPrefix) return null;
+	getShinyVariantSprite(
+		speciesid: string, variant: number | undefined, female: boolean, front: boolean, shiny = true
+	) {
 		const entry = (window as any).ShinyVariantSprites?.[speciesid];
-		const femaleSizes: number[] | undefined = female ? entry?.[`${variant}f`] : undefined;
-		const sizes: number[] | undefined = femaleSizes || entry?.[variant];
+		if (!entry || !Dex.variantPrefix) return null;
+		let tier = !shiny ? 0 : variant === 2 || variant === 3 ? variant : 1;
+		if (!entry[tier] && tier > 1) tier = 1;
+		const femaleSizes: number[] | undefined = female ? entry[`${tier}f`] : undefined;
+		const sizes: number[] | undefined = femaleSizes || entry[tier];
 		if (!sizes) return null;
-		const dir = (variant === 2 ? 'rare' : 'epic') + (front ? '' : '-back');
+		const dir = ['normal', 'shiny', 'rare', 'epic'][tier] + (front ? '' : '-back');
 		return {
 			url: `${Dex.variantPrefix}${dir}/${speciesid}${femaleSizes ? '-f' : ''}.png`,
 			w: front ? sizes[0] : sizes[2],
@@ -1108,9 +1113,10 @@ export const Dex = new class implements ModdedDex {
 			spriteData.url += dir + '/' + name + '.png';
 		}
 
-		// PokéRogue's Rare / Epic shiny variants
-		const variantSprite = options.shiny ?
-			Dex.getShinyVariantSprite(species.id, options.variant, options.gender === 'F', isFront) : null;
+		// PokéRogue's Rare / Epic shiny variants, and Pokémon only PokéRogue has
+		const variantSprite = Dex.getShinyVariantSprite(
+			species.id, options.variant, options.gender === 'F', isFront, !!options.shiny
+		);
 		if (variantSprite) {
 			spriteData.url = variantSprite.url;
 			spriteData.w = variantSprite.w;
@@ -1227,9 +1233,11 @@ export const Dex = new class implements ModdedDex {
 				y: 5,
 			};
 		}
-		// PokéRogue's Rare / Epic shiny variants (centred where a 96x96 sprite would go)
-		const variantSprite = pokemon.shiny ?
-			Dex.getShinyVariantSprite(species.id, pokemon.variant, pokemon.gender === 'F', true) : null;
+		// PokéRogue's Rare / Epic shiny variants, and Pokémon only PokéRogue has
+		// (centred where a 96x96 sprite would go)
+		const variantSprite = Dex.getShinyVariantSprite(
+			species.id, pokemon.variant, pokemon.gender === 'F', true, !!pokemon.shiny
+		);
 		if (variantSprite) {
 			return {
 				spriteid,

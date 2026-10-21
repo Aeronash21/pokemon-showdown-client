@@ -41,6 +41,18 @@ function requireNoCache(pathSpec) {
 	return require(pathSpec);
 }
 
+/** Pokemon that only exist in the pokerogue server mod (the Starmobiles): id -> pokedex entry */
+function modOnlySpecies() {
+	const file = 'caches/pokemon-showdown/dist/data/mods/pokerogue/pokedex.js';
+	if (!fs.existsSync(file)) return {};
+	const modPokedex = requireNoCache('../' + file).Pokedex;
+	const out = {};
+	for (const id in modPokedex) {
+		if (!modPokedex[id].inherit && !Dex.data.Pokedex[id]) out[id] = modPokedex[id];
+	}
+	return out;
+}
+
 /*********************************************************
  * Build search-index.js
  *********************************************************/
@@ -51,6 +63,8 @@ function requireNoCache(pathSpec) {
 	let index = [];
 
 	index = index.concat(Object.keys(Dex.data.Pokedex).map(x => x + ' pokemon'));
+	// Pokemon that only exist in the pokerogue server mod (the Starmobiles)
+	index = index.concat(Object.keys(modOnlySpecies()).map(x => x + ' pokemon'));
 	index = index.concat(Object.keys(Dex.data.Moves).map(x => x + ' move'));
 	index = index.concat(Object.keys(Dex.data.Items).map(x => x + ' item'));
 	// Items that only exist in a server mod (PokeRogue's Max Mushrooms), so they can be searched for
@@ -1520,6 +1534,16 @@ process.stdout.write("Building `data/pokedex.js`... ");
 			if (formatsEntry.tier) entry.tier = formatsEntry.tier;
 			if (formatsEntry.isNonstandard) entry.isNonstandard = formatsEntry.isNonstandard;
 			if (formatsEntry.unreleasedHidden) entry.unreleasedHidden = formatsEntry.unreleasedHidden;
+		}
+	}
+	// Pokemon only the pokerogue mod has: unavailable outside PokeRogue formats
+	// (the PokeRogue teambuilder table overrides isNonstandard and the tier)
+	for (const [id, entry] of Object.entries(modOnlySpecies())) {
+		Pokedex[id] = {...entry, isNonstandard: 'Custom', tier: 'Illegal'};
+		const base = Pokedex[toID(entry.baseSpecies)];
+		if (base && !base.otherFormes?.includes(entry.name)) {
+			base.otherFormes = [...base.otherFormes || [], entry.name];
+			base.formeOrder = [...base.formeOrder || [base.name], entry.name];
 		}
 	}
 	const buf = 'exports.BattlePokedex = ' + es3stringify(Pokedex) + ';';
