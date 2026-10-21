@@ -218,7 +218,9 @@ function toId() {
 		 */
 		getActionPHP: function () {
 			var ret = '/~~' + Config.server.id + '/action.php';
-			if (Config.testclient) {
+			// (Config.ownLoginServer: the login server is on this client's own site;
+			// see tools/vm in the server repo)
+			if (Config.testclient && !Config.ownLoginServer) {
 				ret = 'https://' + Config.routes.client + ret;
 			}
 			return (this.getActionPHP = function () {

@@ -513,6 +513,15 @@ Storage.initTestClient = function () {
 	Config.server = Config.server || Config.defaultserver;
 	Storage.whenTeamsLoaded.load();
 
+	if (Config.ownLoginServer) {
+		// Self-hosted (tools/vm in the server repo): the login server is on this
+		// same site, so its requests work normally and need no workarounds.
+		Storage.whenAppLoaded(function () {
+			Storage.whenPrefsLoaded.load();
+		});
+		return;
+	}
+
 	var sid = null;
 	if (typeof POKEMON_SHOWDOWN_TESTCLIENT_KEY === 'string') {
 		sid = POKEMON_SHOWDOWN_TESTCLIENT_KEY.replace(/\%2C/g, ',');
