@@ -296,10 +296,10 @@ License: GPLv2
 	left: 0;
 	height: 450px;
 	width: 100px;
-	background-color: #CCCCCC;
-	background-color: rgba(255,255,255,0.5);
-	border-right: 1px solid rgba(215,215,215,0.5);
-	color: #777777;
+	background-color: #EEEEEE;
+	background-color: rgba(255,255,255,0.85);
+	border-right: 1px solid rgba(160,160,160,0.8);
+	color: #333333;
 }
 .rightbar {
 	position: absolute;
@@ -307,10 +307,10 @@ License: GPLv2
 	right: 0;
 	height: 450px;
 	width: 100px;
-	background-color: #CCCCCC;
-	background-color: rgba(255,255,255,0.5);
-	border-left: 1px solid rgba(215,215,215,0.5);
-	color: #777777;
+	background-color: #EEEEEE;
+	background-color: rgba(255,255,255,0.85);
+	border-left: 1px solid rgba(160,160,160,0.8);
+	color: #333333;
 }
 .trainer {
 	text-align: center;
@@ -332,17 +332,26 @@ License: GPLv2
 .trainer-far2 {
 	bottom: 75px;
 }
+/* Multi Battles and Free-For-All: two trainers share a sidebar, so they're
+   spaced out to not overlap */
+.trainer-near2 ~ .trainer-near,
+.trainer-far2 {
+	bottom: 0;
+}
+.trainer-near2,
+.trainer-far2 ~ .trainer-far {
+	bottom: 205px;
+}
 
 .trainer strong {
 	display: block;
-	font-size: 8pt;
+	font-size: 9pt;
 	margin-bottom: 2px;
 	word-wrap: break-word;
 }
 .trainer div {
 	width: 86px;
 	height: 90px;
-	opacity: .8;
 	margin: 0 auto;
 	background: transparent none no-repeat scroll center top;
 }
@@ -678,8 +687,8 @@ License: GPLv2
 }
 .dark .leftbar,
 .dark .rightbar {
-	background: rgba(0,0,0,0.5);
-	color: #CCCCCC;
+	background: rgba(0,0,0,0.8);
+	color: #EEEEEE;
 }
 .dark .messagebar {
 	background: #444444;
