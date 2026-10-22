@@ -12,15 +12,21 @@ if (!fs.existsSync('caches/pokemon-showdown')) {
 	});
 }
 
-process.stdout.write("Syncing data from Git repository... ");
-child_process.execSync('git fetch origin master', {
-	cwd: 'caches/pokemon-showdown',
-});
-child_process.execSync('git checkout -B master origin/master', {
-	cwd: 'caches/pokemon-showdown',
-});
-child_process.execSync('npm run build', { cwd: 'caches/pokemon-showdown' });
-console.log("DONE");
+if (process.env.PS_SERVER_PREBUILT) {
+	// caches/pokemon-showdown is a game server that's already up to date and built
+	// (the self-hosted VM links it to its own server: see the server's tools/vm/build-client.sh)
+	console.log("Using caches/pokemon-showdown as it is (PS_SERVER_PREBUILT)");
+} else {
+	process.stdout.write("Syncing data from Git repository... ");
+	child_process.execSync('git fetch origin master', {
+		cwd: 'caches/pokemon-showdown',
+	});
+	child_process.execSync('git checkout -B master origin/master', {
+		cwd: 'caches/pokemon-showdown',
+	});
+	child_process.execSync('npm run build', { cwd: 'caches/pokemon-showdown' });
+	console.log("DONE");
+}
 
 const Dex = require('../caches/pokemon-showdown/dist/sim/dex').Dex;
 const CompoundWordNames = require('../caches/pokemon-showdown/dist/data/aliases').CompoundWordNames;
