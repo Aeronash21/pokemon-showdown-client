@@ -293,6 +293,20 @@
 		buf += '</div></li>';
 		return buf;
 	};
+	/**
+	 * PokéRogue formats: the ability filter this Pokémon only matches through its
+	 * passive (so its row can say so), or ''.
+	 */
+	Search.prototype.passiveFilterMatch = function (pokemon) {
+		var typed = this.engine && this.engine.typedSearch;
+		if (!typed || !typed.hasPokeRoguePassive || !this.filters) return '';
+		for (var i = 0; i < this.filters.length; i++) {
+			var filter = this.filters[i];
+			if (filter[0] !== 'ability' || Dex.hasAbility(pokemon, filter[1])) continue;
+			if (typed.hasPokeRoguePassive(pokemon, filter[1])) return filter[1];
+		}
+		return '';
+	};
 	Search.prototype.renderPokemonRow = function (pokemon, matchStart, matchLength, errorMessage, attrs) {
 		if (!attrs) attrs = '';
 		if (!pokemon) return '<li class="result">Unrecognized pokemon</li>';
@@ -358,7 +372,11 @@
 				}
 				var unreleasedHidden = pokemon.unreleasedHidden;
 				if (unreleasedHidden === 'Past' && (this.mod === 'natdex' || gen < 8)) unreleasedHidden = false;
-				if (abilities['S']) {
+				var passiveMatch = this.passiveFilterMatch(pokemon);
+				if (passiveMatch) {
+					// PokéRogue: listed because the ability filter is its passive
+					buf += '<span class="col twoabilitycol"><small>Passive:</small><br />' + BattleLog.escapeHTML(passiveMatch) + '</span>';
+				} else if (abilities['S']) {
 					if (abilities['H']) {
 						buf += '<span class="col twoabilitycol' + (unreleasedHidden ? ' unreleasedhacol' : '') + '">' + (abilities['H'] || '') + '<br />(' + abilities['S'] + ')</span>';
 					} else {
