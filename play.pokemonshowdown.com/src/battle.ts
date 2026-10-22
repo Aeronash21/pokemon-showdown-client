@@ -3778,7 +3778,12 @@ export class Battle {
 			this.endLastTurn();
 			let poke = this.getSwitchedPokemon(args[1], args[2]);
 			let slot = poke.slot;
-			poke.shinyVariant = parseInt(kwArgs.variant, 10) || 0;
+			const variant = parseInt(kwArgs.variant, 10) || 0;
+			if (variant || poke.shinyVariant) {
+				poke.shinyVariant = variant;
+				// its sprite was made before the variant was known
+				this.scene.updateSpriteData(poke);
+			}
 			poke.healthParse(args[3]);
 			poke.removeVolatile('itemremoved' as ID);
 			poke.terastallized = (/tera:([a-z]+)$/i.exec(args[2]))?.[1] || '';

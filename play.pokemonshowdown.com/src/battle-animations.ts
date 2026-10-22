@@ -1130,6 +1130,10 @@ export class BattleScene implements BattleSceneStub {
 		}
 	}
 
+	/** Redraws a Pokémon's sprite (see PokemonSprite#updateSpriteData) */
+	updateSpriteData(pokemon: Pokemon) {
+		pokemon.sprite.updateSpriteData(pokemon);
+	}
 	addPokemonSprite(pokemon: Pokemon) {
 		const sprite = new PokemonSprite(Dex.getSpriteData(pokemon, pokemon.side.isFar, {
 			gen: this.gen,
@@ -2140,6 +2144,20 @@ export class PokemonSprite extends Sprite {
 			});
 		}
 		this.$sub = null;
+	}
+	/**
+	 * Redraws the sprite for how the Pokémon looks now. A PokéRogue shiny variant is
+	 * only known once the Pokémon switches in, after its sprite was made.
+	 */
+	updateSpriteData(pokemon: Pokemon) {
+		const sp = Dex.getSpriteData(pokemon, this.isFrontSprite, {
+			gen: this.scene.gen,
+			mod: this.scene.mod,
+		});
+		if (sp.url === this.sp.url) return;
+		this.sp = sp;
+		this.oldsp = null;
+		this.$el?.attr('src', sp.url!).toggleClass('pixelated', !!sp.pixelated);
 	}
 	reset(pokemon: Pokemon) {
 		this.clearEffects();

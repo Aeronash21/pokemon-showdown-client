@@ -18,6 +18,7 @@ export class BattleSceneStub {
 
 	abilityActivateAnim(pokemon: Pokemon, result: string): void { }
 	addPokemonSprite(pokemon: Pokemon): PokemonSprite { return null!; }
+	updateSpriteData(pokemon: Pokemon): void { }
 	addSideCondition(siden: number, id: ID, instant?: boolean): void { }
 	animationOff(): void { }
 	animationOn(): void { }
