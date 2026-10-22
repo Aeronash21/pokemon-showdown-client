@@ -875,7 +875,8 @@ export class BattleScene implements BattleSceneStub {
 	compactTeamPreview() {
 		const sides = this.battle.sides.length > 2 ? this.battle.sides : this.battle.sides.slice(0, 2);
 		const bufs = ['', ''];
-		for (const isFar of [false, true]) {
+		// (forEach, not a for loop: the client's Babel setup doesn't allow closures in loops)
+		[false, true].forEach(isFar => {
 			const front = isFar ? this.battle.farSide : this.battle.nearSide;
 			// the player whose Pokémon are in front first (on the near side, lower on the screen)
 			const rows = sides.filter(side => side.isFar === isFar)
@@ -901,8 +902,8 @@ export class BattleScene implements BattleSceneStub {
 					`${BattleLog.escapeHTML(side.name)}</div>`;
 				bufs[+isFar] += buf + label;
 			});
-		}
-		for (const side of sides) {
+		});
+		sides.forEach(side => {
 			side.totalPokemon = side.pokemon.length;
 			const names = side.pokemon.map(pokemon => pokemon.speciesForme).join(' / ');
 			if (names) {
@@ -910,7 +911,7 @@ export class BattleScene implements BattleSceneStub {
 					`<strong>${BattleLog.escapeHTML(side.name)}'s team:</strong> <em style="color:#445566;display:block;">${BattleLog.escapeHTML(names)}</em>`
 				);
 			}
-		}
+		});
 		this.$sprites[0].html(bufs[0]);
 		this.$sprites[1].html(bufs[1]);
 		this.wait(1000);
