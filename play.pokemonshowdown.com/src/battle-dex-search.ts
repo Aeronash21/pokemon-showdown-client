@@ -592,7 +592,9 @@ export class DexSearch {
 				buf.push(['header', TL`${abilityName} Pokémon`]);
 				for (let id in BattlePokedex) {
 					if (!BattlePokedex[id].abilities) continue;
-					if (Dex.hasAbility(this.dex.species.get(id), ability)) {
+					const species = this.dex.species.get(id);
+					// (PokéRogue formats: also the Pokémon with it as their passive)
+					if (Dex.hasAbility(species, ability) || this.typedSearch?.hasPokeRoguePassive(species, ability)) {
 						(illegal && id in illegal ? illegalBuf : buf).push(['pokemon', id as ID]);
 					}
 				}
@@ -963,6 +965,16 @@ abstract class BattleTypedSearch<T extends SearchType> {
 		}
 
 		return '' as ID;
+	}
+	/**
+	 * PokeRogue formats: is `ability` this Pokemon's passive? (Searching for an
+	 * ability also finds the Pokemon that have it as their passive.)
+	 */
+	hasPokeRoguePassive(species: Dex.Species, ability: string) {
+		if (this.formatType !== 'pokerogue' || !species.exists) return false;
+		const passives = BattleTeambuilderTable['pokerogue'].passives;
+		const passive = passives[species.id] || passives[this.pokeRogueID(species.id)];
+		return !!passive && toID(passive) === toID(ability);
 	}
 	/**
 	 * PokeRogue: the species id whose PokeRogue data (move list, egg moves,
@@ -1440,7 +1452,8 @@ class BattlePokemonSearch extends BattleTypedSearch<'pokemon'> {
 				if (this.getTier(species) !== value) return false;
 				break;
 			case 'ability':
-				if (!Dex.hasAbility(species, value)) return false;
+				// (PokéRogue formats: or as its passive)
+				if (!Dex.hasAbility(species, value) && !this.hasPokeRoguePassive(species, value)) return false;
 				break;
 			case 'move':
 				if (!this.canLearn(species.id, value as ID)) return false;

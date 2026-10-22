@@ -769,8 +769,14 @@ export class BattleScene implements BattleSceneStub {
 			this.updateRightSidebar();
 		}
 	}
+	/** Four players with more than 6 Pokémon each (Bring 12 Pick 6...): smaller trainer sprites */
+	bigTeams() {
+		return this.battle.sides.length > 2 &&
+			this.battle.sides.some(side => Math.max(side.totalPokemon, side.pokemon.length) > 6);
+	}
 	updateLeftSidebar() {
 		const side = this.battle.nearSide;
+		this.$leftbar.toggleClass('bigteams', this.bigTeams());
 
 		if (side.ally) {
 			const side2 = side.ally;
@@ -784,6 +790,7 @@ export class BattleScene implements BattleSceneStub {
 	}
 	updateRightSidebar() {
 		const side = this.battle.farSide;
+		this.$rightbar.toggleClass('bigteams', this.bigTeams());
 
 		if (side.ally) {
 			const side2 = side.ally;
@@ -859,7 +866,61 @@ export class BattleScene implements BattleSceneStub {
 		this.$tooltips.html(tooltipBuf);
 	}
 
+	/**
+	 * Four players (Multi Battles, Free-For-All), or more than 6 Pokémon a team
+	 * (Bring 12 Pick 6...): the usual team preview, one row of up to 6 full-size
+	 * sprites per half of the field, can't show everyone. Instead each player gets
+	 * their own row of smaller sprites, labelled with their name.
+	 */
+	compactTeamPreview() {
+		const sides = this.battle.sides.length > 2 ? this.battle.sides : this.battle.sides.slice(0, 2);
+		const bufs = ['', ''];
+		for (const isFar of [false, true]) {
+			const front = isFar ? this.battle.farSide : this.battle.nearSide;
+			// the player whose Pokémon are in front first (on the near side, lower on the screen)
+			const rows = sides.filter(side => side.isFar === isFar)
+				.sort((a, b) => +(b === front) - +(a === front));
+			rows.forEach((side, row) => {
+				// near side: rows at y = 290 and 205; far side: y = 125 and 50
+				const y = isFar ? (rows.length > 1 ? 125 - 75 * row : 100) : (rows.length > 1 ? 290 - 85 * row : 260);
+				const count = side.pokemon.length;
+				const step = Math.min(70, 420 / Math.max(count, 1));
+				const scale = Math.min(rows.length > 1 ? 0.6 : 0.8, step / 60);
+				let buf = '';
+				side.pokemon.forEach((pokemon, i) => {
+					if (pokemon.speciesForme === 'Xerneas-*') pokemon.speciesForme = 'Xerneas-Neutral';
+					const spriteData = Dex.getSpriteData(pokemon, isFar, { gen: this.gen, noScale: true, mod: this.mod });
+					const w = Math.round(spriteData.w * scale);
+					const h = Math.round(spriteData.h * scale);
+					const x = 110 + step * (i + 0.5);
+					buf += `<img src="${spriteData.url!}" width="${w}" height="${h}"${spriteData.pixelated ? ' class="pixelated"' : ''} ` +
+						`style="position:absolute;top:${Math.floor(y - h / 2)}px;left:${Math.floor(x - w / 2)}px" />`;
+				});
+				const label = `<div style="position:absolute;top:${y - 38}px;left:106px;font-size:9pt;font-weight:bold;color:#FFF;` +
+					`text-shadow:#000 1px 1px 0,#000 1px -1px 0,#000 -1px 1px 0,#000 -1px -1px 0">` +
+					`${BattleLog.escapeHTML(side.name)}</div>`;
+				bufs[+isFar] += buf + label;
+			});
+		}
+		for (const side of sides) {
+			side.totalPokemon = side.pokemon.length;
+			const names = side.pokemon.map(pokemon => pokemon.speciesForme).join(' / ');
+			if (names) {
+				this.log.addDiv('chat battle-history',
+					`<strong>${BattleLog.escapeHTML(side.name)}'s team:</strong> <em style="color:#445566;display:block;">${BattleLog.escapeHTML(names)}</em>`
+				);
+			}
+		}
+		this.$sprites[0].html(bufs[0]);
+		this.$sprites[1].html(bufs[1]);
+		this.wait(1000);
+		this.updateSidebars();
+	}
 	teamPreview() {
+		if (this.battle.sides.length > 2 || this.battle.sides.some(side => side.pokemon.length > 6)) {
+			this.compactTeamPreview();
+			return;
+		}
 		let newBGNum = 0;
 		for (let siden = 0; siden < 2 || (this.battle.gameType === 'multi' && siden < 4); siden++) {
 			let side = this.battle.sides[siden];
