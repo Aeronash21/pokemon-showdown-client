@@ -1766,7 +1766,11 @@ export class BattleTooltips {
 		}
 		// Moves that require an item to change their type.
 		let item = this.battle.dex.items.get(value.itemName);
-		if (move.id === 'multiattack' && item.onMemory) {
+		const species = pokemon.getSpecies(serverPokemon);
+		if (move.id === 'multiattack' && species.baseSpecies === 'Arceus' && /PokeRogue|Chaos/.test(this.battle.tier)) {
+			// PokeRogue (and Chaos): Arceus' Multi-Attack is the type of its form, like Judgment
+			moveType = species.types[0];
+		} else if (move.id === 'multiattack' && item.onMemory) {
 			if (value.itemModify(0)) moveType = item.onMemory;
 		}
 		if (move.id === 'judgment' && item.onPlate && !item.zMoveType) {
