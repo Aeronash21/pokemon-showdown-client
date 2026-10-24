@@ -1193,7 +1193,7 @@ export class BattleLog {
 	 * get a colour worked out from the name.
 	 */
 	static serverNameColors: { [userid: string]: string } = {
-		aeronash: '#808080',
+		aeronash: '#003300', // very dark green
 	};
 
 	static usernameColor(name: ID) {
