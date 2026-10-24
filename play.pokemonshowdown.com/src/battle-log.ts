@@ -1189,21 +1189,48 @@ export class BattleLog {
 	}
 
 	/**
-	 * Exact name colours on this server (userid: "#rrggbb"). Usernames otherwise
-	 * get a colour worked out from the name.
+	 * Exact name colours on this server: userid: "#rrggbb", or
+	 * [light theme colour, dark theme colour]. Usernames otherwise get a colour
+	 * worked out from the name.
 	 */
-	static serverNameColors: { [userid: string]: string } = {
-		aeronash: '#003300', // very dark green
+	static serverNameColors: { [userid: string]: string | [string, string] } = {
+		// very dark green (a brighter green on the dark theme, to be readable)
+		aeronash: ['#003300', '#3cb44b'],
 	};
+	static themedNameColorsAdded = false;
+	/**
+	 * Two-theme name colours are a CSS variable with the light colour as the
+	 * fallback; the dark theme (the `dark` class, on <html> in the old client
+	 * and <body> in the new one) sets the variable. So it also follows a theme
+	 * change, chat lines already shown included.
+	 */
+	static addThemedNameColors() {
+		if (this.themedNameColorsAdded || !window.document?.head) return;
+		this.themedNameColorsAdded = true;
+		let css = '';
+		for (const [userid, color] of Object.entries(this.serverNameColors)) {
+			if (Array.isArray(color)) css += `.dark { --namecolor-${userid}: ${color[1]}; }\n`;
+		}
+		const style = document.createElement('style');
+		style.textContent = css;
+		document.head.appendChild(style);
+	}
 
 	static usernameColor(name: ID) {
-		if (this.colorCache[name]) return this.colorCache[name];
-		if (this.serverNameColors[name]) {
-			this.colorCache[name] = this.serverNameColors[name];
+		if (Object.prototype.hasOwnProperty.call(this.colorCache, name)) return this.colorCache[name];
+		const serverColor = Object.prototype.hasOwnProperty.call(this.serverNameColors, name) ?
+			this.serverNameColors[name] : undefined;
+		if (serverColor) {
+			if (Array.isArray(serverColor)) {
+				this.addThemedNameColors();
+				this.colorCache[name] = `var(--namecolor-${name}, ${serverColor[0]})`;
+			} else {
+				this.colorCache[name] = serverColor;
+			}
 			return this.colorCache[name];
 		}
 		let hash;
-		if (Config.customcolors[name]) {
+		if (Object.prototype.hasOwnProperty.call(Config.customcolors, name) && Config.customcolors[name]) {
 			hash = MD5(Config.customcolors[name]);
 		} else {
 			hash = MD5(name);
