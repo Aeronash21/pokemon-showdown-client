@@ -1,0 +1,865 @@
+{
+	"sprites": {
+		"taurospaldeacombat": {
+			"name": "Tauros-Paldea-Combat",
+			"pokengine": "00nzlnvq",
+			"title": "Paldean Tauros (Combat Breed)",
+			"matchesVariants": false
+		},
+		"taurospaldeaaqua": {
+			"name": "Tauros-Paldea-Aqua",
+			"pokengine": "00cx92ni",
+			"title": "Paldean Tauros (Aqua Breed)",
+			"matchesVariants": false
+		},
+		"taurospaldeablaze": {
+			"name": "Tauros-Paldea-Blaze",
+			"pokengine": "00pfxthg",
+			"title": "Paldean Tauros (Blaze Breed)",
+			"matchesVariants": false
+		},
+		"wooperpaldea": {
+			"name": "Wooper-Paldea",
+			"pokengine": "00y5za3m",
+			"title": "Paldean Wooper",
+			"matchesVariants": false
+		},
+		"sprigatito": {
+			"name": "Sprigatito",
+			"pokengine": "00tsl9oc",
+			"title": "Sprigatito",
+			"matchesVariants": true
+		},
+		"floragato": {
+			"name": "Floragato",
+			"pokengine": "00dnc9xv",
+			"title": "Floragato",
+			"matchesVariants": true
+		},
+		"meowscarada": {
+			"name": "Meowscarada",
+			"pokengine": "00kvf3b8",
+			"title": "Meowscarada",
+			"matchesVariants": true
+		},
+		"lechonk": {
+			"name": "Lechonk",
+			"pokengine": "00snakmy",
+			"title": "Lechonk",
+			"matchesVariants": false
+		},
+		"oinkologne": {
+			"name": "Oinkologne",
+			"pokengine": "00c4dtni",
+			"title": "Oinkologne Male",
+			"matchesVariants": false
+		},
+		"oinkolognef": {
+			"name": "Oinkologne-F",
+			"pokengine": "00k4yt59",
+			"title": "Oinkologne Female",
+			"matchesVariants": false
+		},
+		"tarountula": {
+			"name": "Tarountula",
+			"pokengine": "00dqzv27",
+			"title": "Tarountula",
+			"matchesVariants": true
+		},
+		"spidops": {
+			"name": "Spidops",
+			"pokengine": "00hy27wg",
+			"title": "Spidops",
+			"matchesVariants": true
+		},
+		"pawmi": {
+			"name": "Pawmi",
+			"pokengine": "00vkiyx1",
+			"title": "Pawmi",
+			"matchesVariants": false
+		},
+		"pawmo": {
+			"name": "Pawmo",
+			"pokengine": "006t9lrc",
+			"title": "Pawmo",
+			"matchesVariants": false
+		},
+		"pawmot": {
+			"name": "Pawmot",
+			"pokengine": "00gwmxtl",
+			"title": "Pawmot",
+			"matchesVariants": false
+		},
+		"fidough": {
+			"name": "Fidough",
+			"pokengine": "00b8zjhz",
+			"title": "Fidough",
+			"matchesVariants": false
+		},
+		"dachsbun": {
+			"name": "Dachsbun",
+			"pokengine": "00cdvbdi",
+			"title": "Dachsbun",
+			"matchesVariants": false
+		},
+		"smoliv": {
+			"name": "Smoliv",
+			"pokengine": "00qe8qyn",
+			"title": "Smoliv",
+			"matchesVariants": false
+		},
+		"dolliv": {
+			"name": "Dolliv",
+			"pokengine": "00fkid6o",
+			"title": "Dolliv",
+			"matchesVariants": false
+		},
+		"arboliva": {
+			"name": "Arboliva",
+			"pokengine": "00yyfaqe",
+			"title": "Arboliva",
+			"matchesVariants": false
+		},
+		"squawkabillywhite": {
+			"name": "Squawkabilly-White",
+			"pokengine": "00l74zo5",
+			"title": "Squawkabilly White Plumage",
+			"matchesVariants": false
+		},
+		"squawkabilly": {
+			"name": "Squawkabilly",
+			"pokengine": "00tn5hi3",
+			"title": "Squawkabilly Green Plumage",
+			"matchesVariants": false
+		},
+		"squawkabillyblue": {
+			"name": "Squawkabilly-Blue",
+			"pokengine": "00qv3wpw",
+			"title": "Squawkabilly Blue Plumage",
+			"matchesVariants": false
+		},
+		"squawkabillyyellow": {
+			"name": "Squawkabilly-Yellow",
+			"pokengine": "00skl5zy",
+			"title": "Squawkabilly Yellow Plumage",
+			"matchesVariants": false
+		},
+		"tadbulb": {
+			"name": "Tadbulb",
+			"pokengine": "00u1f0xg",
+			"title": "Tadbulb",
+			"matchesVariants": false
+		},
+		"bellibolt": {
+			"name": "Bellibolt",
+			"pokengine": "00x9beqf",
+			"title": "Bellibolt",
+			"matchesVariants": false
+		},
+		"maschiff": {
+			"name": "Maschiff",
+			"pokengine": "00yig205",
+			"title": "Maschiff",
+			"matchesVariants": false
+		},
+		"mabosstiff": {
+			"name": "Mabosstiff",
+			"pokengine": "00nofiu7",
+			"title": "Mabosstiff",
+			"matchesVariants": false
+		},
+		"bramblin": {
+			"name": "Bramblin",
+			"pokengine": "00cwyr1v",
+			"title": "Bramblin",
+			"matchesVariants": false
+		},
+		"brambleghast": {
+			"name": "Brambleghast",
+			"pokengine": "00r5agkq",
+			"title": "Brambleghast",
+			"matchesVariants": false
+		},
+		"klawf": {
+			"name": "Klawf",
+			"pokengine": "00ijr7pt",
+			"title": "Klawf",
+			"matchesVariants": true
+		},
+		"capsakid": {
+			"name": "Capsakid",
+			"pokengine": "0077lz9o",
+			"title": "Capsakid",
+			"matchesVariants": true
+		},
+		"scovillain": {
+			"name": "Scovillain",
+			"pokengine": "00tj2tpp",
+			"title": "Scovillain",
+			"matchesVariants": true
+		},
+		"rellor": {
+			"name": "Rellor",
+			"pokengine": "000bsur5",
+			"title": "Rellor",
+			"matchesVariants": true
+		},
+		"rabsca": {
+			"name": "Rabsca",
+			"pokengine": "00m8lqog",
+			"title": "Rabsca",
+			"matchesVariants": true
+		},
+		"tinkatink": {
+			"name": "Tinkatink",
+			"pokengine": "00i16cf5",
+			"title": "Tinkatink",
+			"matchesVariants": true
+		},
+		"tinkatuff": {
+			"name": "Tinkatuff",
+			"pokengine": "009gdoru",
+			"title": "Tinkatuff",
+			"matchesVariants": true
+		},
+		"tinkaton": {
+			"name": "Tinkaton",
+			"pokengine": "006y7flw",
+			"title": "Tinkaton",
+			"matchesVariants": true
+		},
+		"wiglett": {
+			"name": "Wiglett",
+			"pokengine": "00x8i972",
+			"title": "Wiglett",
+			"matchesVariants": false
+		},
+		"wugtrio": {
+			"name": "Wugtrio",
+			"pokengine": "003un1kz",
+			"title": "Wugtrio",
+			"matchesVariants": false
+		},
+		"finizen": {
+			"name": "Finizen",
+			"pokengine": "002p79gk",
+			"title": "Finizen",
+			"matchesVariants": false
+		},
+		"palafin": {
+			"name": "Palafin",
+			"pokengine": "00mxk1qd",
+			"title": "Palafin Zero Form",
+			"matchesVariants": false
+		},
+		"palafinhero": {
+			"name": "Palafin-Hero",
+			"pokengine": "00cke84d",
+			"title": "Palafin Hero Form",
+			"matchesVariants": false
+		},
+		"varoom": {
+			"name": "Varoom",
+			"pokengine": "00u9qqal",
+			"title": "Varoom",
+			"matchesVariants": false
+		},
+		"revavroom": {
+			"name": "Revavroom",
+			"pokengine": "00go3wjj",
+			"title": "Revavroom",
+			"matchesVariants": false
+		},
+		"glimmet": {
+			"name": "Glimmet",
+			"pokengine": "00rcddmw",
+			"title": "Glimmet",
+			"matchesVariants": true
+		},
+		"glimmora": {
+			"name": "Glimmora",
+			"pokengine": "00x5awq6",
+			"title": "Glimmora",
+			"matchesVariants": true
+		},
+		"greavard": {
+			"name": "Greavard",
+			"pokengine": "0021i4ay",
+			"title": "Greavard",
+			"matchesVariants": false
+		},
+		"houndstone": {
+			"name": "Houndstone",
+			"pokengine": "00gkgfhm",
+			"title": "Houndstone",
+			"matchesVariants": false
+		},
+		"veluza": {
+			"name": "Veluza",
+			"pokengine": "00xc6wwx",
+			"title": "Veluza",
+			"matchesVariants": true
+		},
+		"dondozo": {
+			"name": "Dondozo",
+			"pokengine": "00g61qlh",
+			"title": "Dondozo",
+			"matchesVariants": false
+		},
+		"tatsugiridroopy": {
+			"name": "Tatsugiri-Droopy",
+			"pokengine": "00b9j0v4",
+			"title": "Tatsugiri Droopy Form",
+			"matchesVariants": true
+		},
+		"tatsugiri": {
+			"name": "Tatsugiri",
+			"pokengine": "00q5g2qz",
+			"title": "Tatsugiri Curly Form",
+			"matchesVariants": true
+		},
+		"tatsugiristretchy": {
+			"name": "Tatsugiri-Stretchy",
+			"pokengine": "00emoyxb",
+			"title": "Tatsugiri Stretchy Form",
+			"matchesVariants": true
+		},
+		"clodsire": {
+			"name": "Clodsire",
+			"pokengine": "00x615xd",
+			"title": "Clodsire",
+			"matchesVariants": false
+		},
+		"kingambit": {
+			"name": "Kingambit",
+			"pokengine": "00p0fmzw",
+			"title": "Kingambit",
+			"matchesVariants": false
+		},
+		"greattusk": {
+			"name": "Great Tusk",
+			"pokengine": "0096u8gf",
+			"title": "Great Tusk",
+			"matchesVariants": true
+		},
+		"brutebonnet": {
+			"name": "Brute Bonnet",
+			"pokengine": "00bjuw41",
+			"title": "Brute Bonnet",
+			"matchesVariants": true
+		},
+		"sandyshocks": {
+			"name": "Sandy Shocks",
+			"pokengine": "00nx6hx2",
+			"title": "Sandy Shocks",
+			"matchesVariants": false
+		},
+		"ironbundle": {
+			"name": "Iron Bundle",
+			"pokengine": "00ldzpyb",
+			"title": "Iron Bundle",
+			"matchesVariants": false
+		},
+		"ironhands": {
+			"name": "Iron Hands",
+			"pokengine": "00jf2d9f",
+			"title": "Iron Hands",
+			"matchesVariants": true
+		},
+		"frigibax": {
+			"name": "Frigibax",
+			"pokengine": "00qhdzkt",
+			"title": "Frigibax",
+			"matchesVariants": true
+		},
+		"arctibax": {
+			"name": "Arctibax",
+			"pokengine": "00laexf6",
+			"title": "Arctibax",
+			"matchesVariants": true
+		},
+		"baxcalibur": {
+			"name": "Baxcalibur",
+			"pokengine": "00pzvpnh",
+			"title": "Baxcalibur",
+			"matchesVariants": true
+		},
+		"gimmighoul": {
+			"name": "Gimmighoul",
+			"pokengine": "00eppiky",
+			"title": "Gimmighoul Chest Form",
+			"matchesVariants": true
+		},
+		"gimmighoulroaming": {
+			"name": "Gimmighoul-Roaming",
+			"pokengine": "00srue3o",
+			"title": "Gimmighoul Roaming Form",
+			"matchesVariants": true
+		},
+		"gholdengo": {
+			"name": "Gholdengo",
+			"pokengine": "00p12g9t",
+			"title": "Gholdengo",
+			"matchesVariants": true
+		},
+		"chienpao": {
+			"name": "Chien-Pao",
+			"pokengine": "00s66mc8",
+			"title": "Chien-Pao",
+			"matchesVariants": false
+		},
+		"roaringmoon": {
+			"name": "Roaring Moon",
+			"pokengine": "00dgqnx1",
+			"title": "Roaring Moon",
+			"matchesVariants": true
+		},
+		"walkingwake": {
+			"name": "Walking Wake",
+			"pokengine": "00ds1tb9",
+			"title": "Walking Wake",
+			"matchesVariants": false
+		},
+		"dipplin": {
+			"name": "Dipplin",
+			"pokengine": "00ydii6w",
+			"title": "Dipplin",
+			"matchesVariants": true
+		},
+		"okidogi": {
+			"name": "Okidogi",
+			"pokengine": "00yd2ngo",
+			"title": "Okidogi",
+			"matchesVariants": false
+		},
+		"munkidori": {
+			"name": "Munkidori",
+			"pokengine": "00oqbs2z",
+			"title": "Munkidori",
+			"matchesVariants": false
+		},
+		"fezandipiti": {
+			"name": "Fezandipiti",
+			"pokengine": "00w8cddf",
+			"title": "Fezandipiti",
+			"matchesVariants": false
+		},
+		"ogerpon": {
+			"name": "Ogerpon",
+			"pokengine": "00i0gte7",
+			"title": "Ogerpon Teal Mask",
+			"matchesVariants": false
+		},
+		"ogerponwellspring": {
+			"name": "Ogerpon-Wellspring",
+			"pokengine": "00mr0fvv",
+			"title": "Ogerpon Wellspring Mask",
+			"matchesVariants": false
+		},
+		"ogerponhearthflame": {
+			"name": "Ogerpon-Hearthflame",
+			"pokengine": "002rhj4p",
+			"title": "Ogerpon Hearthflame Mask",
+			"matchesVariants": false
+		},
+		"ogerponcornerstone": {
+			"name": "Ogerpon-Cornerstone",
+			"pokengine": "00h2pw97",
+			"title": "Ogerpon Cornerstone Mask",
+			"matchesVariants": false
+		},
+		"ogerpontealtera": {
+			"name": "Ogerpon-Teal-Tera",
+			"pokengine": "005yxg8s",
+			"title": "Terastallized Ogerpon Teal Mask",
+			"matchesVariants": false
+		},
+		"ogerponwellspringtera": {
+			"name": "Ogerpon-Wellspring-Tera",
+			"pokengine": "00rs3zpl",
+			"title": "Terastallized Ogerpon Wellspring Mask",
+			"matchesVariants": false
+		},
+		"ogerponhearthflametera": {
+			"name": "Ogerpon-Hearthflame-Tera",
+			"pokengine": "0064kbqa",
+			"title": "Terastallized Ogerpon Hearthflame Mask",
+			"matchesVariants": false
+		},
+		"ogerponcornerstonetera": {
+			"name": "Ogerpon-Cornerstone-Tera",
+			"pokengine": "00pycfhf",
+			"title": "Terastallized Ogerpon Cornerstone Mask",
+			"matchesVariants": false
+		},
+		"flittle": {
+			"name": "Flittle",
+			"pokengine": "00gerj0x",
+			"title": "Flittle",
+			"matchesVariants": false
+		},
+		"espathra": {
+			"name": "Espathra",
+			"pokengine": "00lf6iey",
+			"title": "Espathra",
+			"matchesVariants": false
+		},
+		"gougingfire": {
+			"name": "Gouging Fire",
+			"pokengine": "00nqjkws",
+			"title": "Gouging Fire",
+			"matchesVariants": false
+		},
+		"ragingbolt": {
+			"name": "Raging Bolt",
+			"pokengine": "0021f2f5",
+			"title": "Raging Bolt",
+			"matchesVariants": false
+		},
+		"terapagos": {
+			"name": "Terapagos",
+			"pokengine": "00ekl0oi",
+			"title": "Terapagos",
+			"matchesVariants": false
+		},
+		"terapagosterastal": {
+			"name": "Terapagos-Terastal",
+			"pokengine": "003zm7zx",
+			"title": "Terapagos Terastal Form",
+			"matchesVariants": false
+		},
+		"terapagosstellar": {
+			"name": "Terapagos-Stellar",
+			"pokengine": "007e9yvw",
+			"title": "Terapagos Stellar Form",
+			"matchesVariants": false
+		},
+		"pecharunt": {
+			"name": "Pecharunt",
+			"pokengine": "00o3p2ba",
+			"title": "Pecharunt",
+			"matchesVariants": false
+		},
+		"dragonitemega": {
+			"name": "Dragonite-Mega",
+			"pokengine": "00tts5eg",
+			"title": "Mega Dragonite",
+			"matchesVariants": true
+		},
+		"victreebelmega": {
+			"name": "Victreebel-Mega",
+			"pokengine": "00of1wl9",
+			"title": "Mega Victreebel",
+			"matchesVariants": true
+		},
+		"hawluchamega": {
+			"name": "Hawlucha-Mega",
+			"pokengine": "00dji34y",
+			"title": "Mega Hawlucha",
+			"matchesVariants": false
+		},
+		"malamarmega": {
+			"name": "Malamar-Mega",
+			"pokengine": "00n8q9p4",
+			"title": "Mega Malamar",
+			"matchesVariants": false
+		},
+		"raichumegax": {
+			"name": "Raichu-Mega-X",
+			"pokengine": "005zk3s1",
+			"title": "Mega Raichu X",
+			"matchesVariants": true
+		},
+		"raichumegay": {
+			"name": "Raichu-Mega-Y",
+			"pokengine": "009hhqg4",
+			"title": "Mega Raichu Y",
+			"matchesVariants": true
+		},
+		"delphoxmega": {
+			"name": "Delphox-Mega",
+			"pokengine": "0097g74u",
+			"title": "Mega Delphox",
+			"matchesVariants": true
+		},
+		"chesnaughtmega": {
+			"name": "Chesnaught-Mega",
+			"pokengine": "00k31mdu",
+			"title": "Mega Chesnaught",
+			"matchesVariants": true
+		},
+		"greninjamega": {
+			"name": "Greninja-Mega",
+			"pokengine": "00bn1dwt",
+			"title": "Mega Greninja",
+			"matchesVariants": true
+		},
+		"meganiummega": {
+			"name": "Meganium-Mega",
+			"pokengine": "00pi4d63",
+			"title": "Mega Meganium",
+			"matchesVariants": true
+		},
+		"feraligatrmega": {
+			"name": "Feraligatr-Mega",
+			"pokengine": "00yxpivu",
+			"title": "Mega Feraligatr",
+			"matchesVariants": true
+		},
+		"emboarmega": {
+			"name": "Emboar-Mega",
+			"pokengine": "00eiozrb",
+			"title": "Mega Emboar",
+			"matchesVariants": true
+		},
+		"eelektrossmega": {
+			"name": "Eelektross-Mega",
+			"pokengine": "00oecsy3",
+			"title": "Mega Eelektross",
+			"matchesVariants": false
+		},
+		"chimechomega": {
+			"name": "Chimecho-Mega",
+			"pokengine": "00j6iyfk",
+			"title": "Mega Chimecho",
+			"matchesVariants": true
+		},
+		"baxcaliburmega": {
+			"name": "Baxcalibur-Mega",
+			"pokengine": "00bzo9rd",
+			"title": "Mega Baxcalibur",
+			"matchesVariants": true
+		},
+		"clefablemega": {
+			"name": "Clefable-Mega",
+			"pokengine": "008bku74",
+			"title": "Mega Clefable",
+			"matchesVariants": true
+		},
+		"scraftymega": {
+			"name": "Scrafty-Mega",
+			"pokengine": "008onnsh",
+			"title": "Mega Scrafty",
+			"matchesVariants": true
+		},
+		"skarmorymega": {
+			"name": "Skarmory-Mega",
+			"pokengine": "00pw4icj",
+			"title": "Mega Skarmory",
+			"matchesVariants": true
+		},
+		"froslassmega": {
+			"name": "Froslass-Mega",
+			"pokengine": "00f3c3my",
+			"title": "Mega Froslass",
+			"matchesVariants": true
+		},
+		"excadrillmega": {
+			"name": "Excadrill-Mega",
+			"pokengine": "00updse8",
+			"title": "Mega Excadrill",
+			"matchesVariants": true
+		},
+		"scolipedemega": {
+			"name": "Scolipede-Mega",
+			"pokengine": "00wobxde",
+			"title": "Mega Scolipede",
+			"matchesVariants": true
+		},
+		"chandeluremega": {
+			"name": "Chandelure-Mega",
+			"pokengine": "008xpa5k",
+			"title": "Mega Chandelure",
+			"matchesVariants": true
+		},
+		"pyroarmega": {
+			"name": "Pyroar-Mega",
+			"pokengine": "00lwigb4",
+			"title": "Mega Pyroar",
+			"matchesVariants": false
+		},
+		"floettemega": {
+			"name": "Floette-Mega",
+			"pokengine": "0032nhtn",
+			"title": "Mega Floette",
+			"matchesVariants": true
+		},
+		"barbaraclemega": {
+			"name": "Barbaracle-Mega",
+			"pokengine": "00n8d21l",
+			"title": "Mega Barbaracle",
+			"matchesVariants": true
+		},
+		"dragalgemega": {
+			"name": "Dragalge-Mega",
+			"pokengine": "005rohs7",
+			"title": "Mega Dragalge",
+			"matchesVariants": true
+		},
+		"drampamega": {
+			"name": "Drampa-Mega",
+			"pokengine": "00p4soz4",
+			"title": "Mega Drampa",
+			"matchesVariants": true
+		},
+		"falinksmega": {
+			"name": "Falinks-Mega",
+			"pokengine": "00j6fxif",
+			"title": "Mega Falinks",
+			"matchesVariants": false
+		},
+		"zeraoramega": {
+			"name": "Zeraora-Mega",
+			"pokengine": "00ncpx3f",
+			"title": "Mega Zeraora",
+			"matchesVariants": true
+		},
+		"zygardemega": {
+			"name": "Zygarde-Mega",
+			"pokengine": "00bbe9yv",
+			"title": "Mega Zygarde",
+			"matchesVariants": false
+		},
+		"lucariomegaz": {
+			"name": "Lucario-Mega-Z",
+			"pokengine": "003c1v1w",
+			"title": "Mega Lucario Z",
+			"matchesVariants": true
+		},
+		"glimmoramega": {
+			"name": "Glimmora-Mega",
+			"pokengine": "00w4v2n3",
+			"title": "Mega Glimmora",
+			"matchesVariants": true
+		},
+		"heatranmega": {
+			"name": "Heatran-Mega",
+			"pokengine": "00lftscj",
+			"title": "Mega Heatran",
+			"matchesVariants": true
+		},
+		"tatsugiricurlymega": {
+			"name": "Tatsugiri-Curly-Mega",
+			"pokengine": "00smkcaw",
+			"title": "Mega Tatsugiri Curly Form",
+			"matchesVariants": true
+		},
+		"absolmegaz": {
+			"name": "Absol-Mega-Z",
+			"pokengine": "009umneh",
+			"title": "Mega Absol Z",
+			"matchesVariants": true
+		},
+		"staraptormega": {
+			"name": "Staraptor-Mega",
+			"pokengine": "003ukwh1",
+			"title": "Mega Staraptor",
+			"matchesVariants": true
+		},
+		"garchompmegaz": {
+			"name": "Garchomp-Mega-Z",
+			"pokengine": "00g0e3vs",
+			"title": "Mega Garchomp Z",
+			"matchesVariants": true
+		},
+		"darkraimega": {
+			"name": "Darkrai-Mega",
+			"pokengine": "0034lo4l",
+			"title": "Mega Darkrai",
+			"matchesVariants": true
+		},
+		"golurkmega": {
+			"name": "Golurk-Mega",
+			"pokengine": "00qx6i4h",
+			"title": "Mega Golurk",
+			"matchesVariants": true
+		},
+		"meowsticmmega": {
+			"name": "Meowstic-M-Mega",
+			"pokengine": "00de8q6e",
+			"title": "Mega Meowstic",
+			"matchesVariants": true
+		},
+		"crabominablemega": {
+			"name": "Crabominable-Mega",
+			"pokengine": "009e24e9",
+			"title": "Mega Crabominable",
+			"matchesVariants": false
+		},
+		"golisopodmega": {
+			"name": "Golisopod-Mega",
+			"pokengine": "0023wjdf",
+			"title": "Mega Golisopod",
+			"matchesVariants": true
+		},
+		"magearnamega": {
+			"name": "Magearna-Mega",
+			"pokengine": "00o1qrnn",
+			"title": "Mega Magearna",
+			"matchesVariants": false
+		},
+		"scovillainmega": {
+			"name": "Scovillain-Mega",
+			"pokengine": "00y8lasg",
+			"title": "Mega Scovillain",
+			"matchesVariants": true
+		}
+	},
+	"differentArt": {
+		"ursalunabloodmoon": "Ursaluna-Bloodmoon",
+		"fuecoco": "Fuecoco",
+		"crocalor": "Crocalor",
+		"skeledirge": "Skeledirge",
+		"quaxly": "Quaxly",
+		"quaxwell": "Quaxwell",
+		"quaquaval": "Quaquaval",
+		"nymble": "Nymble",
+		"lokix": "Lokix",
+		"tandemaus": "Tandemaus",
+		"mausholdfour": "Maushold-Four",
+		"maushold": "Maushold",
+		"nacli": "Nacli",
+		"naclstack": "Naclstack",
+		"garganacl": "Garganacl",
+		"charcadet": "Charcadet",
+		"armarouge": "Armarouge",
+		"ceruledge": "Ceruledge",
+		"wattrel": "Wattrel",
+		"kilowattrel": "Kilowattrel",
+		"shroodle": "Shroodle",
+		"grafaiai": "Grafaiai",
+		"toedscool": "Toedscool",
+		"toedscruel": "Toedscruel",
+		"bombirdier": "Bombirdier",
+		"cyclizar": "Cyclizar",
+		"orthworm": "Orthworm",
+		"flamigo": "Flamigo",
+		"cetoddle": "Cetoddle",
+		"cetitan": "Cetitan",
+		"annihilape": "Annihilape",
+		"farigiraf": "Farigiraf",
+		"dudunsparce": "Dudunsparce",
+		"dudunsparcethreesegment": "Dudunsparce-Three-Segment",
+		"screamtail": "Scream Tail",
+		"fluttermane": "Flutter Mane",
+		"slitherwing": "Slither Wing",
+		"irontreads": "Iron Treads",
+		"ironjugulis": "Iron Jugulis",
+		"ironmoth": "Iron Moth",
+		"ironthorns": "Iron Thorns",
+		"wochien": "Wo-Chien",
+		"tinglu": "Ting-Lu",
+		"chiyu": "Chi-Yu",
+		"ironvaliant": "Iron Valiant",
+		"koraidon": "Koraidon",
+		"miraidon": "Miraidon",
+		"ironleaves": "Iron Leaves",
+		"poltchageist": "Poltchageist",
+		"sinistcha": "Sinistcha",
+		"archaludon": "Archaludon",
+		"hydrapple": "Hydrapple",
+		"ironcrown": "Iron Crown",
+		"ironboulder": "Iron Boulder",
+		"starmiemega": "Starmie-Mega"
+	}
+}

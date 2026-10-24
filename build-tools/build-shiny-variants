@@ -10,6 +10,12 @@
  * 3 = Epic; f = female, b = back). Images and data are PokéRogue's
  * (https://github.com/pagefaultgames/pokerogue); rights stay with their creators.
  *
+ * It also adds the Gen 9 base sprites (normal and shiny, front and back) from
+ * Pokéngine's Nintendo region (https://pokengine.org, saved in
+ * build-tools/pokengine-gen9/, see its sprites.json): every Gen 9 Pokémon gets
+ * them unless it has PokéRogue variants drawn on different art, which then
+ * keeps Showdown's own sprites so they match.
+ *
  * Usage: node build-tools/build-shiny-variants PATH/TO/PokeRogue-Dex [PATH/TO/built/pokemon-showdown]
  * (the server checkout needs `node build` run, for its dist/ folder)
  */
@@ -43,14 +49,14 @@ const files = new Set(fs.readdirSync(path.join(dexDir, 'images')));
 
 const FORM_NAMES = {
 	gigantamax: 'gmax', partner: 'starter', 'cool-cosplay': 'rockstar', 'beauty-cosplay': 'belle',
-	'cute-cosplay': 'popstar', 'smart-cosplay': 'phd', 'tough-cosplay': 'libre',
+	'cute-cosplay': 'popstar', 'smart-cosplay': 'phd', 'tough-cosplay': 'libre', jumbo: 'super',
 };
 const OVERRIDES = {
 	'2038': 'ninetalesalola', '2658': 'greninjabond', '2658-ash': 'greninjaash', '8901': 'ursalunabloodmoon',
 	'2670-mega': 'floettemega', '892-gigantamax-single': 'urshifugmax', '892-gigantamax-rapid': 'urshifurapidstrikegmax',
 	'678-mega': 'meowsticmmega', '978-mega-curly': 'tatsugiricurlymega', '978-mega-droopy': 'tatsugiridroopymega',
 	'978-mega-stretchy': 'tatsugiristretchymega', '172-spiky': 'pichuspikyeared', '774-red-meteor': 'miniormeteor',
-	'678-female': 'meowsticf', '876-female': 'indeedeef',
+	'678-female': 'meowsticf', '876-female': 'indeedeef', '902-female': 'basculegionf', '6550': 'basculinwhitestriped',
 	'966-segin-starmobile': 'revavroomsegin', '966-schedar-starmobile': 'revavroomschedar',
 	'966-navi-starmobile': 'revavroomnavi', '966-ruchbah-starmobile': 'revavroomruchbah',
 	'966-caph-starmobile': 'revavroomcaph',
@@ -132,24 +138,57 @@ items.forEach((item, i) => {
 	}
 });
 
+// ---------------------------------------------------------------------------
+// Pokéngine's Gen 9 sprites as the normal ("0") and shiny ("1") sprites
+
+const pokengineDir = path.join(__dirname, 'pokengine-gen9');
+const pokengine = JSON.parse(fs.readFileSync(path.join(pokengineDir, 'sprites.json'), 'utf8'));
+const pokengineSkipped = [];
+let pokengineCount = 0;
+for (const [id, info] of Object.entries(pokengine.sprites)) {
+	const entry = variants[id] || {};
+	// PokéRogue variants drawn on other art: keep Showdown's sprites, to match them
+	if ((entry[2] || entry[3]) && !info.matchesVariants) {
+		pokengineSkipped.push(info.name);
+		continue;
+	}
+	for (const tier of [0, 1]) {
+		const front = path.join(pokengineDir, TIER_DIRS[tier], id + '.png');
+		const back = path.join(pokengineDir, TIER_DIRS[tier] + '-back', id + '.png');
+		fs.copyFileSync(front, path.join(outDir, TIER_DIRS[tier], id + '.png'));
+		fs.copyFileSync(back, path.join(outDir, TIER_DIRS[tier] + '-back', id + '.png'));
+		entry[tier] = [...pngSize(front), ...pngSize(back)];
+		copied += 2;
+	}
+	variants[id] = entry;
+	pokengineCount++;
+}
+
 fs.writeFileSync(path.join(outDir, 'variants.js'),
 	`// PokéRogue shiny variants: Rare ("2") and Epic ("3") sprites, "f" = female. Pokémon that only\n` +
-	`// PokéRogue has also get their normal ("0") and shiny ("1") sprites.\n` +
+	`// PokéRogue has, and Gen 9 Pokémon (Pokéngine's sprites), also get their normal ("0") and shiny ("1") sprites.\n` +
 	`// [front width, front height, back width, back height]. Built by build-tools/build-shiny-variants.\n` +
 	`// Sprites from PokéRogue (https://pokerogue.net, https://github.com/pagefaultgames/pokerogue) via\n` +
-	`// Sandstormer's PokeRogue SearchDex (https://github.com/Sandstormer/PokeRogue-Dex).\n` +
+	`// Sandstormer's PokeRogue SearchDex (https://github.com/Sandstormer/PokeRogue-Dex). Gen 9 normal and\n` +
+	`// shiny sprites from Pokéngine's Nintendo region (https://pokengine.org).\n` +
 	`// All rights to the sprites stay with their original creators.\n` +
 	`window.ShinyVariantSprites = ${JSON.stringify(variants)};\n`);
 
 fs.writeFileSync(path.join(outDir, 'README.md'),
 	`# PokéRogue shiny variant sprites\n\n` +
 	`Rare (\`rare/\`, \`rare-back/\`) and Epic (\`epic/\`, \`epic-back/\`) shiny variants, named by Showdown species ID ` +
-	`(\`-f\` = female), plus the normal (\`normal/\`) and shiny (\`shiny/\`) sprites of Pokémon that only PokéRogue has. ` +
+	`(\`-f\` = female), plus the normal (\`normal/\`) and shiny (\`shiny/\`) sprites of Pokémon that only PokéRogue has, ` +
+	`and of Gen 9 Pokémon (from Pokéngine; see \`build-tools/pokengine-gen9/\`). ` +
 	`\`variants.js\` lists which exist and their sizes.\n\n` +
 	`Made by \`build-tools/build-shiny-variants\`; don't edit by hand.\n\n` +
 	`Sprites from [PokéRogue](https://pokerogue.net) ([GitHub](https://github.com/pagefaultgames/pokerogue)), ` +
 	`via Sandstormer's [PokeRogue SearchDex](https://github.com/Sandstormer/PokeRogue-Dex). ` +
+	`Gen 9 normal and shiny sprites from [Pokéngine](https://pokengine.org)'s Nintendo region. ` +
 	`All rights to the sprites stay with their original creators.\n`);
 
-console.log(`${Object.keys(variants).length} Pokémon, ${copied} sprites`);
+console.log(`${Object.keys(variants).length} Pokémon, ${copied} sprites (${pokengineCount} Gen 9 Pokémon with Pokéngine's sprites)`);
+if (pokengineSkipped.length) {
+	console.log(`Now with PokéRogue variants, so not given Pokéngine's sprites (check whether the art matches): ` +
+		pokengineSkipped.join(', '));
+}
 if (skipped.length) console.log(`No Showdown match (skipped): ${skipped.join(', ')}`);
