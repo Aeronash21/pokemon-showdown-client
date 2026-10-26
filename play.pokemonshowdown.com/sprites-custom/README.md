@@ -12,8 +12,9 @@ Item icons are listed in `CUSTOM_ITEM_ICONS` in `src/battle-dex.ts`.
 
 - `arenas/<biome>.png`: battle backdrops (700×500, shown in Gen 6+ battles; see `PokeRogueArenas` in
   `src/battle-animations.ts`)
-- `backgrounds/<biome>.png`: page backgrounds (1920×1080; the background picker's "PokéRogue biomes",
-  and the default; see `Storage.bg.POKEROGUE` in `src/oldclient/storage.js`)
+- `backgrounds/<biome>.png`: page backgrounds (1920×1080; the background picker's "PokéRogue biomes";
+  see `Storage.bg.POKEROGUE` in `src/oldclient/storage.js`)
+- `backgrounds/pokerogue.png`: the default page background, the End's scenery without its bases
 
 Both are made from the biome art of [PokéRogue](https://pokerogue.net)
 ([pokerogue-assets](https://github.com/pagefaultgames/pokerogue-assets), `images/arenas/`) by

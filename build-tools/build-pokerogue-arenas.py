@@ -4,7 +4,9 @@
     python3 build-tools/build-pokerogue-arenas.py <pokerogue-assets>/images/arenas
 
 Writes play.pokemonshowdown.com/sprites-custom/arenas/<biome>.png (700x500 battle
-backdrops) and sprites-custom/backgrounds/<biome>.png (1920x1080 page backgrounds).
+backdrops), sprites-custom/backgrounds/<biome>.png (1920x1080 page backgrounds), and
+sprites-custom/backgrounds/pokerogue.png (the default page background: the End's
+scenery without its bases).
 Needs Pillow. The art is CC BY-NC-SA 4.0: see sprites-custom/README.md for credits.
 
 A Showdown backdrop is 700x500 and the visible battle frame is the 640x360 area
@@ -48,6 +50,9 @@ NEAR_CENTRE = (260, 318)
 # 320x132 canvas (some have grass or signs sticking out), so this is its middle
 BASE_MIDDLE = (216, 74)
 PAGE_SCALE = 6
+# The client's default page background (backgrounds/pokerogue.png): just this
+# biome's scenery, with no base or props, so it doesn't look like a battlefield
+DEFAULT_PAGE_BIOME = 'end'
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'play.pokemonshowdown.com', 'sprites-custom')
 
@@ -116,6 +121,12 @@ def page_background(arenas, biome):
 	return scaled(out, PAGE_SCALE)
 
 
+def default_page_background(arenas):
+	"""The default biome's scenery on its own: no bases, and none of the props that
+	stand on them"""
+	return scaled(layers(arenas, DEFAULT_PAGE_BIOME)[0].convert('RGB'), PAGE_SCALE)
+
+
 def backdrop(frame):
 	frame = frame.convert('RGB')
 	out = Image.new('RGB', (700, 500))
@@ -136,7 +147,8 @@ def main():
 		name = biome.replace('_', '')
 		backdrop(battle_frame(arenas, biome)).save(os.path.join(out, 'arenas', name + '.png'), optimize=True)
 		page_background(arenas, biome).convert('RGB').save(os.path.join(out, 'backgrounds', name + '.png'), optimize=True)
-	print(f'{len(BIOMES)} biomes written to {out}')
+	default_page_background(arenas).save(os.path.join(out, 'backgrounds', 'pokerogue.png'), optimize=True)
+	print(f'{len(BIOMES)} biomes and the default background written to {out}')
 
 
 if __name__ == '__main__':

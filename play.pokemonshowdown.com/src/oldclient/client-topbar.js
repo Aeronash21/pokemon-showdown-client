@@ -852,7 +852,12 @@
 			buf += '<p><strong>Default</strong></p>';
 			buf += '<div class="bglist">';
 
-			buf += '<button name="setBg" value="" class="option' + (!cur ? ' cur' : '') + '"><strong style="background:#888888;color:white;padding:16px 18px;display:block;font-size:12pt">' + (location.host === Config.routes.client || Dex.customPrefix ? 'Random' : 'Default') + '</strong></button>';
+			if (Dex.customPrefix) {
+				// this client's default is PokéRogue's End scenery (see Storage.bg.load)
+				buf += '<button name="setBg" value="" class="option pokerogue-bg' + (!cur ? ' cur' : '') + '"><span class="bg" style="background-image:url(' + Storage.bg.url('pokerogue') + ')"></span>Default</button>';
+			} else {
+				buf += '<button name="setBg" value="" class="option' + (!cur ? ' cur' : '') + '"><strong style="background:#888888;color:white;padding:16px 18px;display:block;font-size:12pt">' + (location.host === Config.routes.client ? 'Random' : 'Default') + '</strong></button>';
+			}
 
 			buf += '</div><div style="clear:left"></div>';
 			if (Dex.customPrefix) {

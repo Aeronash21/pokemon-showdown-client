@@ -36,7 +36,7 @@ Storage.bg = {
 	/**
 	 * PokéRogue's biomes as page backgrounds (sprites-custom/backgrounds/, built by
 	 * build-tools/build-pokerogue-arenas.py; credits in sprites-custom/README.md).
-	 * This client's default is a random one of these.
+	 * This client's default, `pokerogue`, is the End's scenery without its bases.
 	 */
 	POKEROGUE: {
 		abyss: "Abyss", badlands: "Badlands", beach: "Beach", cave: "Cave", constructionsite: "Construction Site",
@@ -50,6 +50,7 @@ Storage.bg = {
 	},
 	url: function (bgid) {
 		if (bgid === 'solidblue') return '#344b6c';
+		if (bgid === 'pokerogue') return Dex.customPrefix + 'backgrounds/pokerogue.png';
 		if (bgid.slice(0, 10) === 'pokerogue-') return Dex.customPrefix + 'backgrounds/' + bgid.slice(10) + '.png';
 		return Dex.resourcePrefix + 'fx/client-bg-' + bgid + '.jpg';
 	},
@@ -79,8 +80,7 @@ Storage.bg = {
 				var bgs = ['horizon', 'ocean', 'shaymin', 'charizards', 'psday'];
 				bgid = bgs[Math.floor(Math.random() * bgs.length)];
 			} else if (Dex.customPrefix) {
-				var biomes = Object.keys(this.POKEROGUE);
-				bgid = 'pokerogue-' + biomes[Math.floor(Math.random() * biomes.length)];
+				bgid = 'pokerogue';
 			} else {
 				$(document.body).css({
 					background: '',
@@ -97,7 +97,7 @@ Storage.bg = {
 		// bgUrl = Dex.resourcePrefix + 'sprites/afd/digimonbg.jpg';
 
 		var background;
-		var isPokeRogue = bgid.slice(0, 10) === 'pokerogue-';
+		var isPokeRogue = bgid === 'pokerogue' || bgid.slice(0, 10) === 'pokerogue-';
 		if (bgUrl.charAt(0) === '#') {
 			background = bgUrl;
 		} else if (isPokeRogue) {
@@ -118,7 +118,7 @@ Storage.bg = {
 			// the PokéRogue theme draws the menu buttons itself (style/pokerogue-theme.css)
 			hues = [];
 			for (var i = 0; i < Storage.bg.MENU_BUTTONS; i++) hues.push('275,15%');
-			var biome = bgid.slice(10);
+			var biome = bgid === 'pokerogue' ? 'end' : bgid.slice(10);
 			var artists = (biome === 'rockycoast' || biome === 'well' ? 'Vari' :
 				'Squip, with Someonealive-QN and redactedinlight');
 			attrib = '<a href="https://github.com/pagefaultgames/pokerogue/blob/beta/CREDITS.md" target="_blank" class="subtle">"' +
