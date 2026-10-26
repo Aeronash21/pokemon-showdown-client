@@ -33,6 +33,26 @@ Storage.bg = {
 	// futureproofing in case we ever add more?
 	// because doing this once was annoying
 	MENU_BUTTONS: 7,
+	/**
+	 * PokéRogue's biomes as page backgrounds (sprites-custom/backgrounds/, built by
+	 * build-tools/build-pokerogue-arenas.py; credits in sprites-custom/README.md).
+	 * This client's default is a random one of these.
+	 */
+	POKEROGUE: {
+		abyss: "Abyss", badlands: "Badlands", beach: "Beach", cave: "Cave", constructionsite: "Construction Site",
+		desert: "Desert", dojo: "Dojo", end: "The End", factory: "Factory", fairycave: "Fairy Cave",
+		forest: "Forest", grass: "Grassy Field", graveyard: "Graveyard", icecave: "Ice Cave", island: "Island",
+		jungle: "Jungle", laboratory: "Laboratory", lake: "Lake", meadow: "Meadow", metropolis: "Metropolis",
+		mountain: "Mountain", plains: "Plains", powerplant: "Power Plant", rockycoast: "Rocky Coast", ruins: "Ancient Ruins",
+		sea: "Sea", seabed: "Seabed", slum: "Slum", snowyforest: "Snowy Forest", space: "Space",
+		swamp: "Swamp", tallgrass: "Tall Grass", temple: "Temple", town: "Town", volcano: "Volcano",
+		wasteland: "Wasteland", well: "Well"
+	},
+	url: function (bgid) {
+		if (bgid === 'solidblue') return '#344b6c';
+		if (bgid.slice(0, 10) === 'pokerogue-') return Dex.customPrefix + 'backgrounds/' + bgid.slice(10) + '.png';
+		return Dex.resourcePrefix + 'fx/client-bg-' + bgid + '.jpg';
+	},
 	set: function (bgUrl, bgid, noSave) {
 		if (!this.load(bgUrl, bgid)) {
 			this.extractMenuColors(bgUrl, bgid, noSave);
@@ -58,6 +78,9 @@ Storage.bg = {
 			} else if (location.host === Config.routes.client || bgid === 'waterfall') {
 				var bgs = ['horizon', 'ocean', 'shaymin', 'charizards', 'psday'];
 				bgid = bgs[Math.floor(Math.random() * bgs.length)];
+			} else if (Dex.customPrefix) {
+				var biomes = Object.keys(this.POKEROGUE);
+				bgid = 'pokerogue-' + biomes[Math.floor(Math.random() * biomes.length)];
 			} else {
 				$(document.body).css({
 					background: '',
@@ -66,7 +89,7 @@ Storage.bg = {
 				$('#mainmenubuttoncolors').remove();
 				return true;
 			}
-			bgUrl = Dex.resourcePrefix + 'fx/client-bg-' + bgid + '.jpg';
+			bgUrl = this.url(bgid);
 		}
 
 		// April Fool's 2016 - Digimon theme
@@ -74,8 +97,11 @@ Storage.bg = {
 		// bgUrl = Dex.resourcePrefix + 'sprites/afd/digimonbg.jpg';
 
 		var background;
+		var isPokeRogue = bgid.slice(0, 10) === 'pokerogue-';
 		if (bgUrl.charAt(0) === '#') {
 			background = bgUrl;
+		} else if (isPokeRogue) {
+			background = '#484050 url(' + bgUrl + ') no-repeat center center fixed';
 		} else if (bgid !== 'custom') {
 			background = '#546bac url(' + bgUrl + ') no-repeat left center fixed';
 		} else {
@@ -88,6 +114,17 @@ Storage.bg = {
 		var attrib = '';
 		this.changeCount++;
 
+		if (!hues && isPokeRogue) {
+			// the PokéRogue theme draws the menu buttons itself (style/pokerogue-theme.css)
+			hues = [];
+			for (var i = 0; i < Storage.bg.MENU_BUTTONS; i++) hues.push('275,15%');
+			var biome = bgid.slice(10);
+			var artists = (biome === 'rockycoast' || biome === 'well' ? 'Vari' :
+				'Squip, with Someonealive-QN and redactedinlight');
+			attrib = '<a href="https://github.com/pagefaultgames/pokerogue/blob/beta/CREDITS.md" target="_blank" class="subtle">"' +
+				(this.POKEROGUE[biome] || biome) + '" <small>from Pok&eacute;Rogue, art by ' + artists +
+				' (CC BY-NC-SA 4.0)</small></a>';
+		}
 		if (!hues) {
 			switch (bgid) {
 			case 'horizon':

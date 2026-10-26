@@ -852,9 +852,18 @@
 			buf += '<p><strong>Default</strong></p>';
 			buf += '<div class="bglist">';
 
-			buf += '<button name="setBg" value="" class="option' + (!cur ? ' cur' : '') + '"><strong style="background:#888888;color:white;padding:16px 18px;display:block;font-size:12pt">' + (location.host === Config.routes.client ? 'Random' : 'Default') + '</strong></button>';
+			buf += '<button name="setBg" value="" class="option' + (!cur ? ' cur' : '') + '"><strong style="background:#888888;color:white;padding:16px 18px;display:block;font-size:12pt">' + (location.host === Config.routes.client || Dex.customPrefix ? 'Random' : 'Default') + '</strong></button>';
 
 			buf += '</div><div style="clear:left"></div>';
+			if (Dex.customPrefix) {
+				buf += '<p><strong>Pok&eacute;Rogue biomes</strong> <small>(art by Squip, Someonealive-QN, redactedinlight and Vari)</small></p>';
+				buf += '<div class="bglist">';
+				for (var biome in Storage.bg.POKEROGUE) {
+					var bgid = 'pokerogue-' + biome;
+					buf += '<button name="setBg" value="' + bgid + '" class="option pokerogue-bg' + (cur === bgid ? ' cur' : '') + '"><span class="bg" style="background-image:url(' + Storage.bg.url(bgid) + ')"></span>' + Storage.bg.POKEROGUE[biome] + '</button>';
+				}
+				buf += '</div><div style="clear:left"></div>';
+			}
 			buf += '<p><strong>Official</strong></p>';
 			buf += '<div class="bglist">';
 
@@ -879,7 +888,7 @@
 			this.$el.html(buf);
 		},
 		setBg: function (bgid) {
-			var bgUrl = (bgid === 'solidblue' ? '#344b6c' : Dex.resourcePrefix + 'fx/client-bg-' + bgid + '.jpg');
+			var bgUrl = bgid ? Storage.bg.url(bgid) : '';
 			Storage.bg.set(bgUrl, bgid);
 			this.$('.cur').removeClass('cur');
 			this.$('button[value="' + bgid + '"]').addClass('cur');

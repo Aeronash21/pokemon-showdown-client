@@ -152,7 +152,7 @@ export class BattleScene implements BattleSceneStub {
 		this.$battle = $('<div class="innerbattle"></div>');
 		this.$frame.append(this.$battle);
 
-		this.$bg = $('<div class="backdrop" style="background-image:url(' + Dex.resourcePrefix + this.backdropImage + ');display:block;opacity:0.8"></div>');
+		this.$bg = $('<div class="backdrop" style="background-image:url(' + this.backdropUrl() + ');display:block;opacity:0.8"></div>');
 		this.$terrain = $('<div class="weather"></div>');
 		this.$weather = $('<div class="weather"></div>');
 		this.$bgEffect = $('<div></div>');
@@ -600,6 +600,9 @@ export class BattleScene implements BattleSceneStub {
 		} else if (typeof rated === 'string' && rated.startsWith('Smogon Champions League')) {
 			bg = 'fx/bg-scl.png';
 			this.setBgm(-101);
+		} else if (this.battle.gen >= 6 && Dex.customPrefix) {
+			// a PokéRogue biome (with the BW sprites too, which suit its pixel art)
+			bg = `${Dex.customPrefix}arenas/${PokeRogueArenas[this.numericId % PokeRogueArenas.length]}.png`;
 		} else {
 			if (gen <= 1) bg = 'fx/bg-gen1.png?';
 			else if (gen <= 2) bg = 'fx/bg-gen2.png?';
@@ -611,8 +614,12 @@ export class BattleScene implements BattleSceneStub {
 
 		this.backdropImage = bg;
 		if (this.$bg) {
-			this.$bg.css('background-image', `url(${Dex.resourcePrefix}${this.backdropImage})`);
+			this.$bg.css('background-image', `url(${this.backdropUrl()})`);
 		}
+	}
+	/** backdropImage is a path on Showdown's own servers, or a full URL */
+	backdropUrl() {
+		return /^(https?:)?\/\//.test(this.backdropImage) ? this.backdropImage : Dex.resourcePrefix + this.backdropImage;
 	}
 
 	getDetailsText(pokemon: Pokemon) {
@@ -3364,6 +3371,17 @@ const BattleBackdrops = [
 	'bg-orasdesert.jpg',
 	'bg-orassea.jpg',
 	'bg-skypillar.jpg',
+];
+/**
+ * PokéRogue's biomes, built into Showdown-sized backdrops by build-tools/build-pokerogue-arenas.py
+ * (play.pokemonshowdown.com/sprites-custom/arenas/; credits in sprites-custom/README.md)
+ */
+const PokeRogueArenas = [
+	'abyss', 'badlands', 'beach', 'cave', 'constructionsite', 'desert', 'dojo', 'end',
+	'factory', 'fairycave', 'forest', 'grass', 'graveyard', 'icecave', 'island', 'jungle',
+	'laboratory', 'lake', 'meadow', 'metropolis', 'mountain', 'plains', 'powerplant',
+	'rockycoast', 'ruins', 'sea', 'seabed', 'slum', 'snowyforest', 'space', 'swamp',
+	'tallgrass', 'temple', 'town', 'volcano', 'wasteland', 'well',
 ];
 
 export const BattleOtherAnims: AnimTable = {

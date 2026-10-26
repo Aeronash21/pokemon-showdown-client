@@ -506,6 +506,12 @@ export const Dex = new class implements ModdedDex {
 		return location?.host ? `${location.protocol}//${location.host}/sprites-variants/` : '';
 	})();
 
+	/** Other images this client hosts itself (play.pokemonshowdown.com/sprites-custom/) */
+	customPrefix = (() => {
+		const location = window.document?.location;
+		return location?.host ? `${location.protocol}//${location.host}/sprites-custom/` : '';
+	})();
+
 	/**
 	 * A PokéRogue sprite from play.pokemonshowdown.com/sprites-variants/ (variants.js), if
 	 * there is one: a Rare (2) / Epic (3) shiny variant, or the normal / shiny sprite of a

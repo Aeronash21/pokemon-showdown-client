@@ -1,0 +1,488 @@
+/**
+ * PokéRogue colour scheme for this client.
+ *
+ * Colours are PokéRogue's own (https://github.com/pagefaultgames/pokerogue
+ * index.css, and the window frames in pokerogue-assets images/ui/windows):
+ * the plum window fill, the red / teal / gold / grey window borders with
+ * their #181818 outline, white text with a lilac shadow, and the #484050 page.
+ * Loaded after every other stylesheet, so it only needs to win ties.
+ */
+
+:root {
+	--pr-page: #484050;
+	--pr-window: #362d3e;
+	--pr-window-hover: #463a51;
+	--pr-window-active: #2b2432;
+	--pr-outline: #181818;
+	--pr-text: #f8f8f8;
+	--pr-text-shadow: #6b5a73;
+	--pr-red: #c73625;
+	--pr-red-shade: #7a3033;
+	--pr-red-shade2: #582e39;
+	--pr-teal: #20b098;
+	--pr-teal-shade: #2c6a68;
+	--pr-teal-shade2: #314951;
+	--pr-gold: #ffb745;
+	--pr-gold-shade: #946e41;
+	--pr-gold-shade2: #614b40;
+	--pr-grey: #d7d7d7;
+	--pr-grey-shade: #817d86;
+	--pr-grey-shade2: #59525f;
+	/* light theme surfaces: PokéRogue's lilac, lightened to read on */
+	--pr-light-room: rgba(244, 239, 248, .88);
+	--pr-light-opaque: #f2edf6;
+	--pr-light-popup: #ebe3f0;
+	--pr-light-line: #9d8ca8;
+	--pr-light-ink: #2b2231;
+}
+
+/*********************************************************
+ * Page and header
+ *********************************************************/
+
+body {
+	background-color: var(--pr-page);
+}
+
+.header {
+	background: linear-gradient(to bottom, #574a63, var(--pr-window) 70%);
+	box-shadow: inset 0 -2px 0 var(--pr-red), inset 0 -3px 0 var(--pr-outline);
+}
+.dark .header {
+	background: linear-gradient(to bottom, #3f3449, #241e2a 70%);
+}
+.header .userbar .username,
+.header .userbar .usergroup {
+	color: var(--pr-text);
+	text-shadow: 1px 1px 0 var(--pr-outline);
+}
+
+/* tabs: plum windows; the open tab takes the room's colour */
+.tabbar a.button {
+	background: linear-gradient(to bottom, #5a4c66, #43384d);
+	border-color: var(--pr-outline);
+	color: var(--pr-text);
+	text-shadow: 1px 1px 0 var(--pr-outline);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18);
+}
+.tabbar a.button:hover {
+	background: linear-gradient(to bottom, #6c5c79, #504359);
+	border-color: var(--pr-outline);
+	color: #ffffff;
+}
+.tabbar a.button.cur,
+.tabbar a.button.cur:hover {
+	background: var(--pr-light-opaque);
+	border-color: var(--pr-light-line);
+	color: var(--pr-light-ink);
+	text-shadow: none;
+	box-shadow: inset 0 2px 0 var(--pr-red);
+}
+.tabbar a.button.notifying {
+	background: linear-gradient(to bottom, #b0493b, #8a3229);
+	border-color: var(--pr-outline);
+}
+.tabbar a.button.subtle-notifying {
+	color: var(--pr-gold);
+}
+.maintabbarbottom {
+	background: var(--pr-light-opaque);
+	border-color: var(--pr-light-line);
+}
+.tabbar .closebutton,
+.tabbar .minimizebutton {
+	color: var(--pr-text);
+}
+.tabbar a.cur + .closebutton,
+.tabbar a.cur + .closebutton + .minimizebutton {
+	color: var(--pr-light-ink);
+}
+
+.dark .tabbar a.button.cur,
+.dark .tabbar a.button.cur:hover {
+	background: #43384d;
+	border-color: var(--pr-outline);
+	color: var(--pr-text);
+}
+.dark .maintabbarbottom {
+	background: #43384d;
+	border-color: var(--pr-outline);
+	border-top-color: var(--pr-outline);
+}
+.dark .tabbar a.cur + .closebutton,
+.dark .tabbar a.cur + .closebutton + .minimizebutton {
+	color: var(--pr-text);
+}
+
+/*********************************************************
+ * Rooms and popups
+ *********************************************************/
+
+.ps-room.ps-room-light {
+	background: var(--pr-light-room);
+	color: var(--pr-light-ink);
+	border-left-color: var(--pr-light-line);
+}
+.ps-room.ps-room-opaque {
+	background: var(--pr-light-opaque);
+	color: var(--pr-light-ink);
+	border-left-color: var(--pr-light-line);
+}
+.ps-popup {
+	background: var(--pr-light-popup);
+	color: var(--pr-light-ink);
+	border: 2px solid var(--pr-red);
+	border-radius: 4px;
+	box-shadow: 0 0 0 1px var(--pr-outline), inset 0 1px 0 #ffffff, 2px 3px 4px rgba(0, 0, 0, .3);
+}
+
+.dark .ps-room.ps-room-light,
+.dark .tournament-box,
+.dark .tournament-status,
+.dark .tournament-toggle,
+.dark .pm-log-add {
+	background: rgba(43, 36, 50, .88);
+	color: #e6e0ea;
+	border-color: #5e5068;
+}
+.dark .ps-room.ps-room-opaque,
+.dark .battle-log-add,
+.dark .battle-controls {
+	background: #3a3143;
+	color: #e6e0ea;
+}
+.dark .userlist-maximized {
+	background: #2f2836;
+}
+.dark .userlist-minimized,
+.dark .pm-buttonbar button {
+	background: #3a3143;
+}
+.dark .pm-log,
+.dark .chat-log {
+	background: rgba(36, 30, 42, .8);
+}
+.dark .ps-popup {
+	background: var(--pr-window);
+	color: var(--pr-text);
+	border: 2px solid var(--pr-red);
+	box-shadow: 0 0 0 1px var(--pr-outline), inset 0 1px 0 var(--pr-red-shade), inset 0 2px 0 var(--pr-red-shade2), 2px 3px 4px rgba(0, 0, 0, .5);
+}
+.dark .base-select::picker(select) {
+	background: var(--pr-window);
+	border-color: var(--pr-red);
+}
+
+/*********************************************************
+ * Buttons
+ *********************************************************/
+
+.button {
+	color: var(--pr-light-ink);
+	border-color: var(--pr-light-line);
+	background: #ece6f1;
+	background: linear-gradient(to bottom, #fbf8fd, #ddd3e5);
+}
+.button:hover,
+.button:active {
+	border-color: #6b5a73;
+	background: #ddd2e6;
+	background: linear-gradient(to bottom, #f6f0fa, #cbbcd8);
+}
+.button:active {
+	background: linear-gradient(to bottom, #cbbcd8, #f6f0fa);
+}
+.button option,
+.button optgroup {
+	background: #fbf8fd;
+	color: var(--pr-light-ink);
+}
+.button.cur,
+.button.cur:hover,
+.button.cur:disabled,
+.button.cur:disabled:hover {
+	background: #f7f3fa;
+	color: #4a3d53;
+	border-color: var(--pr-light-line);
+}
+.button.disabled,
+.button.disabled:hover,
+.button.disabled:active,
+.button:disabled,
+.button:disabled:hover,
+.button:disabled:active {
+	background: #eeeaf1;
+	border-color: #cfc5d6;
+	color: #9a8fa2;
+}
+
+.dark .button {
+	background: var(--pr-window);
+	background: linear-gradient(to bottom, #4b3f56, var(--pr-window));
+	border-color: var(--pr-outline);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, .16), 0 1px 2px rgba(0, 0, 0, .4);
+	color: var(--pr-text);
+}
+.dark .button:hover {
+	background: var(--pr-window-hover);
+	background: linear-gradient(to bottom, #5f506c, var(--pr-window-hover));
+	border-color: var(--pr-red);
+}
+.dark .button:active {
+	background: linear-gradient(to bottom, var(--pr-window-active), #4b3f56);
+	border-color: var(--pr-red);
+	box-shadow: none;
+}
+.dark .button option,
+.dark .button optgroup,
+.dark .select option,
+.dark .select optgroup {
+	background: var(--pr-window);
+	color: var(--pr-text);
+}
+.dark .button.disabled,
+.dark .button.disabled:hover,
+.dark .button.disabled:active,
+.dark .button:disabled,
+.dark .button:disabled:hover,
+.dark .button:disabled:active {
+	background: #2e2735;
+	border-color: var(--pr-outline);
+	box-shadow: none;
+	color: #8a7d93;
+}
+.dark .button.cur,
+.dark .button.cur:hover {
+	background: #5a4c66;
+	border-color: var(--pr-red);
+	color: var(--pr-text);
+}
+
+/*********************************************************
+ * Main menu: PokéRogue's windows
+ *********************************************************/
+
+.menugroup {
+	background: rgba(36, 30, 42, .55);
+	border-radius: 8px;
+	box-shadow: 0 0 0 1px rgba(24, 24, 24, .5);
+}
+
+/* `html body` beats the per-background colours that storage.js writes as `body .button.mainmenuN` */
+html body .menugroup .button,
+html body .button.mainmenu1,
+html body .button.mainmenu2,
+html body .button.mainmenu3,
+html body .button.mainmenu4,
+html body .button.mainmenu5,
+html body .button.mainmenu6,
+html body .button.mainmenu7 {
+	--pr-edge: var(--pr-red);
+	--pr-edge-shade: var(--pr-red-shade);
+	--pr-edge-shade2: var(--pr-red-shade2);
+	background: var(--pr-window);
+	border: 2px solid var(--pr-edge);
+	border-radius: 3px;
+	box-shadow: 0 0 0 1px var(--pr-outline), inset 0 1px 0 var(--pr-edge-shade), inset 0 2px 0 var(--pr-edge-shade2), 0 2px 3px rgba(0, 0, 0, .35);
+	color: var(--pr-text);
+	text-shadow: 1px 1px 0 var(--pr-text-shadow);
+}
+html body .button.mainmenu2,
+html body .button.mainmenu3,
+html body .button.mainmenu4 {
+	--pr-edge: var(--pr-gold);
+	--pr-edge-shade: var(--pr-gold-shade);
+	--pr-edge-shade2: var(--pr-gold-shade2);
+}
+html body .menugroup .button.mainmenu4.onlineonly,
+html body .button.mainmenu5,
+html body .button.mainmenu6 {
+	--pr-edge: var(--pr-teal);
+	--pr-edge-shade: var(--pr-teal-shade);
+	--pr-edge-shade2: var(--pr-teal-shade2);
+}
+html body .button.mainmenu7 {
+	--pr-edge: var(--pr-grey);
+	--pr-edge-shade: var(--pr-grey-shade);
+	--pr-edge-shade2: var(--pr-grey-shade2);
+}
+html body .menugroup .button:hover,
+html body .button.mainmenu1:hover,
+html body .button.mainmenu2:hover,
+html body .button.mainmenu3:hover,
+html body .button.mainmenu4:hover,
+html body .button.mainmenu5:hover,
+html body .button.mainmenu6:hover,
+html body .button.mainmenu7:hover {
+	background: var(--pr-window-hover);
+	border-color: var(--pr-edge);
+	color: #ffffff;
+}
+html body .menugroup .button:active,
+html body .button.mainmenu1:active,
+html body .button.mainmenu2:active,
+html body .button.mainmenu3:active,
+html body .button.mainmenu4:active,
+html body .button.mainmenu5:active,
+html body .button.mainmenu6:active,
+html body .button.mainmenu7:active {
+	background: var(--pr-window-active);
+	border-color: var(--pr-edge);
+	box-shadow: 0 0 0 1px var(--pr-outline), inset 0 2px 3px rgba(0, 0, 0, .5);
+}
+html body .menugroup .button.disabled,
+html body .menugroup .button.disabled:hover,
+html body .menugroup .button.disabled:active {
+	background: #2e2735;
+	border-color: #6b5a73;
+	box-shadow: 0 0 0 1px var(--pr-outline);
+	color: #9d90a6;
+	text-shadow: none;
+}
+.menugroup .button small {
+	color: #e5dcea;
+}
+
+/*********************************************************
+ * Smaller touches
+ *********************************************************/
+
+.bgcredit,
+.bgcredit a {
+	color: var(--pr-text);
+	text-shadow: 1px 1px 0 var(--pr-outline);
+}
+.bglist button.pokerogue-bg {
+	float: none;
+	display: inline-block;
+	vertical-align: top;
+	width: 104px;
+	font-size: 8pt;
+}
+.bglist .pokerogue-bg span {
+	width: 96px;
+	height: 54px;
+	margin: 0 auto 2px auto;
+	background-size: cover;
+	background-position: center center;
+	image-rendering: pixelated;
+}
+.ps-room .battle {
+	/* the backdrop is drawn at 80% opacity: over white, PokéRogue's colours stay true */
+	background: #fbf9fc;
+	border-color: var(--pr-outline);
+}
+
+.battle-log {
+	background: #f3eff6;
+	border-color: var(--pr-light-line);
+}
+.message-log h2 {
+	background: #e4dbeb;
+	border-color: var(--pr-light-line);
+	box-shadow: inset 3px 0 0 var(--pr-red);
+}
+.dark .battle-log {
+	background: #2f2836;
+	color: #d9d1de;
+}
+.dark .message-log h2 {
+	background: #43384d;
+	border-color: var(--pr-outline);
+	color: var(--pr-text);
+}
+
+/* PM and news windows: plum title bars */
+.pm-window h3 {
+	background: rgba(54, 45, 62, .92);
+	border-color: var(--pr-outline);
+	box-shadow: inset 0 -2px 0 var(--pr-red);
+	color: #e5dcea;
+}
+.pm-window h3:hover {
+	color: #ffffff;
+}
+.pm-window h3 small {
+	color: #b9aec1;
+}
+.pm-window h3 .closebutton,
+.pm-window h3 .minimizebutton {
+	color: #b9aec1;
+}
+.pm-window h3:hover .minimizebutton {
+	color: #ffffff;
+}
+.pm-window h3.pm-notifying,
+.pm-window h3.pm-notifying:hover,
+.dark .pm-window h3.pm-notifying,
+.dark .pm-window h3.pm-notifying:hover {
+	background: #8a3229;
+	border-color: var(--pr-outline);
+	color: #ffffff;
+}
+.pm-log {
+	background: rgba(246, 242, 249, .94);
+	border-color: var(--pr-light-line);
+}
+.dark .pm-window h3 {
+	background: rgba(36, 30, 42, .92);
+	color: #cfc4d6;
+}
+.battle .turn {
+	background: var(--pr-window);
+	border: 2px solid var(--pr-red);
+	color: var(--pr-text);
+	text-shadow: 1px 1px 0 var(--pr-text-shadow);
+	box-shadow: 0 0 0 1px var(--pr-outline);
+}
+
+/* teambuilder folder list: lilac instead of Showdown's blue */
+.folderpane {
+	border-left-color: #ddd2e5;
+}
+.folderlist .foldersep:before,
+.folderlistafter:before,
+.folderlistbefore:before,
+.folderpane .text,
+.folderpane h3,
+.folder .selectFolder,
+.folderhack1,
+.folderhack2 {
+	background: #ddd2e5;
+}
+.folder .selectFolder:hover {
+	background: #cdbfd8;
+}
+.folder .selectFolder:active {
+	background: #bcadc8;
+}
+.folder .selectFolder.active {
+	background: var(--pr-window);
+}
+.folder.cur .selectFolder,
+.folder.cur .selectFolder:hover,
+.folder.cur .selectFolder:active {
+	background: transparent;
+	box-shadow: inset 3px 0 0 var(--pr-red);
+}
+.dark .folderpane {
+	border-left-color: #43384d;
+}
+.dark .folderlist .foldersep:before,
+.dark .folderlistafter:before,
+.dark .folderlistbefore:before,
+.dark .folderpane h3,
+.dark .folderpane .text,
+.dark .folder .selectFolder,
+.dark .folderhack1,
+.dark .folderhack2 {
+	background: #43384d;
+}
+.dark .folder .selectFolder:hover {
+	background: #5a4c66;
+}
+.dark .folder.cur .selectFolder,
+.dark .folder.cur .selectFolder:hover,
+.dark .folder.cur .selectFolder:active {
+	background: transparent;
+}
