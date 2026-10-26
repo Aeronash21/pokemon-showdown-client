@@ -486,3 +486,30 @@ html body .menugroup .button.disabled:active {
 .dark .folder.cur .selectFolder:active {
 	background: transparent;
 }
+
+/* search results' sort bar: Showdown leaves it light grey in dark mode too */
+.utilichart .sortrow {
+	background: #ddd2e5;
+	border-bottom-color: var(--pr-light-line);
+}
+.dark .utilichart .sortrow {
+	background: #43384d;
+	border-bottom-color: var(--pr-outline);
+}
+.dark .utilichart .sortcol {
+	color: #e6e0ea;
+}
+
+/* the trainer panels at the sides of the battle */
+.leftbar,
+.rightbar {
+	background-color: rgba(246, 242, 249, .88);
+	border-color: rgba(157, 140, 168, .8);
+	color: var(--pr-light-ink);
+}
+.dark .leftbar,
+.dark .rightbar {
+	background-color: rgba(43, 36, 50, .88);
+	border-color: var(--pr-outline);
+	color: #e6e0ea;
+}
