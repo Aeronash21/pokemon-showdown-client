@@ -88,6 +88,8 @@ export class Pokemon implements PokemonDetails, PokemonHealth {
 	shiny = false;
 	/** PokéRogue shiny variant: 2 = Rare, 3 = Epic, 0 = none (from the `[variant]` tag on switch-ins) */
 	shinyVariant = 0;
+	/** PokeRogue Fusion: the second Pokémon of its fusion (`[fusion]` on switch-ins) */
+	fusion = '';
 
 	hpcolor: HPColor = 'g';
 	moves: string[] = [];
@@ -578,7 +580,12 @@ export class Pokemon implements PokemonDetails, PokemonHealth {
 			(serverPokemon ? serverPokemon.speciesForme : this.speciesForme);
 	}
 	getSpecies(serverPokemon?: ServerPokemon) {
-		return this.side.battle.dex.species.get(this.getSpeciesForme(serverPokemon));
+		const dex = this.side.battle.dex;
+		const species = dex.species.get(this.getSpeciesForme(serverPokemon));
+		// PokeRogue Fusion (a transformed Pokémon copies its target's fusion)
+		const transformedInto = this.volatiles.transform?.[1] as Pokemon | undefined;
+		const fusion = transformedInto ? transformedInto.fusion : (this.fusion || serverPokemon?.fusion);
+		return fusion ? Dex.getFusedSpecies(species, dex.species.get(fusion)) : species;
 	}
 	getBaseSpecies() {
 		return this.side.battle.dex.species.get(this.speciesForme);
@@ -1071,6 +1078,8 @@ export interface ServerPokemon extends PokemonDetails, PokemonHealth {
 	teraType: string;
 	/** falsy if the pokemon is not terastallized, otherwise it is the Tera Type of the Pokemon */
 	terastallized: string;
+	/** PokeRogue Fusion: the second Pokémon of its fusion */
+	fusion?: string;
 }
 
 export class Battle {
@@ -3778,6 +3787,8 @@ export class Battle {
 			this.endLastTurn();
 			let poke = this.getSwitchedPokemon(args[1], args[2]);
 			let slot = poke.slot;
+			// PokeRogue Fusion: the second Pokémon of its fusion
+			if (kwArgs.fusion) poke.fusion = kwArgs.fusion;
 			const variant = parseInt(kwArgs.variant, 10) || 0;
 			if (variant || poke.shinyVariant) {
 				poke.shinyVariant = variant;

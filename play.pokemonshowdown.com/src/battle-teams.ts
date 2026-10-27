@@ -44,6 +44,8 @@ export declare namespace Teams {
 		teraType?: string;
 		/** PokeRogue formats: the passive ability is on unless this is `false` */
 		passive?: boolean;
+		/** PokeRogue Fusion: the second Pokémon of a DNA Splicers fusion (species name) */
+		fusion?: string;
 	}
 	export interface PokemonSet extends Partial<FullPokemonSet> {
 		/** Defaults to species name (not including forme), like in games */
@@ -120,13 +122,16 @@ export const Teams = new class {
 			buf += `|${set.happiness !== undefined && set.happiness !== 255 ? set.happiness : ''}`;
 
 			if (set.pokeball || set.hpType || set.gigantamax ||
-				(set.dynamaxLevel !== undefined && set.dynamaxLevel !== 10) || set.teraType || set.passive === false) {
+				(set.dynamaxLevel !== undefined && set.dynamaxLevel !== 10) || set.teraType || set.passive === false ||
+				set.fusion) {
 				buf += `,${set.hpType || ''}`;
 				buf += `,${this.packName(set.pokeball || '')}`;
 				buf += `,${set.gigantamax ? 'G' : ''}`;
 				buf += `,${set.dynamaxLevel !== undefined && set.dynamaxLevel !== 10 ? set.dynamaxLevel : ''}`;
 				buf += `,${set.teraType || ''}`;
-				if (set.passive === false) buf += `,off`;
+				if (set.passive === false || set.fusion) buf += `,${set.passive === false ? 'off' : ''}`;
+				// PokeRogue Fusion: the second Pokémon
+				if (set.fusion) buf += `,${this.packName(set.fusion)}`;
 			}
 		}
 
@@ -259,9 +264,9 @@ export const Teams = new class {
 			j = buf.indexOf(']', i);
 			let misc;
 			if (j < 0) {
-				if (i < buf.length) misc = buf.substring(i).split(',', 7);
+				if (i < buf.length) misc = buf.substring(i).split(',', 8);
 			} else {
-				if (i !== j) misc = buf.substring(i, j).split(',', 7);
+				if (i !== j) misc = buf.substring(i, j).split(',', 8);
 			}
 			if (misc) {
 				set.happiness = (misc[0] ? Number(misc[0]) : undefined);
@@ -271,6 +276,7 @@ export const Teams = new class {
 				set.dynamaxLevel = (misc[4] ? Number(misc[4]) : undefined);
 				set.teraType = misc[5] || undefined;
 				if (misc[6] === 'off') set.passive = false;
+				if (misc[7]) set.fusion = Dex.species.get(misc[7]).name || misc[7];
 			}
 			i = j + 1;
 			if (j < 0 || i <= lastI) break;
@@ -410,6 +416,9 @@ export const Teams = new class {
 		if (set.passive === false) {
 			text += `Passive: Off\n`;
 		}
+		if (set.fusion) {
+			text += `Fusion: ${set.fusion}\n`;
+		}
 
 		if (!newFormat) {
 			for (let move of set.moves || []) {
@@ -508,6 +517,9 @@ export const Teams = new class {
 			set.teraType = line.slice(11);
 		} else if (line.startsWith('Passive: ')) {
 			if (/^(off|no|false|disabled)$/i.test(line.slice(9).trim())) set.passive = false;
+		} else if (line.startsWith('Fusion: ')) {
+			const fusion = line.slice(8).trim();
+			if (fusion) set.fusion = Dex.species.get(fusion).exists ? Dex.species.get(fusion).name : fusion;
 		} else if (line.startsWith('EVs: ')) {
 			const evLines = line.slice(5).split('(')[0].split('/');
 			set.evs = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };

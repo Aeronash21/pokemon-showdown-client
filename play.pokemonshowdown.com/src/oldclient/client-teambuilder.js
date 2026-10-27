@@ -26,6 +26,10 @@
 	function isChaosFormat(format) {
 		return !!format && /^(gen9)?chaos/.test(format);
 	}
+	/** PokeRogue Fusion: every Pokémon can be fused with a second one (set.fusion) */
+	function isFusionFormat(format) {
+		return !!format && format.includes('pokeroguefusion');
+	}
 
 	exports.TeambuilderRoom = exports.Room.extend({
 		type: 'teambuilder',
@@ -1315,10 +1319,17 @@
 			this.$(".teamedit textarea").focus().select();
 			if ($(window).width() < 640) this.show();
 		},
+		/** A set's species as it battles: in PokeRogue Fusion, fused with its second Pokémon */
+		getSetSpecies: function (set) {
+			var dex = this.curTeam.dex;
+			var species = dex.species.get(set.species);
+			if (!set.fusion || !isFusionFormat(this.curTeam.format)) return species;
+			return Dex.getFusedSpecies(species, dex.species.get(set.fusion));
+		},
 		renderSet: function (set, i) {
 			var baseFormat = this.curTeam.format;
 			if (baseFormat.substr(-5) === 'draft') baseFormat = baseFormat.substr(0, baseFormat.length - 5);
-			var species = this.curTeam.dex.species.get(set.species);
+			var species = this.getSetSpecies(set);
 			var isChampions = baseFormat.includes('champions');
 			var isLetsGo = baseFormat.includes('letsgo');
 			var isBDSP = baseFormat.includes('bdsp');
@@ -1340,6 +1351,12 @@
 			buf += '<div class="setchart-nickname">';
 			buf += '<label>Nickname</label><input type="text" name="nickname" class="textbox" value="' + BattleLog.escapeHTML(set.name || '') + '" placeholder="' + BattleLog.escapeHTML(species.baseSpecies) + '" />';
 			buf += '</div>';
+			// PokeRogue Fusion: the second Pokémon (DNA Splicers)
+			if (isFusionFormat(baseFormat)) {
+				buf += '<div class="setchart-nickname setchart-fusion" title="The second Pok&eacute;mon of the fusion: its secondary type and ability, the average of both base stats, and either one\'s moves">';
+				buf += '<label>Fused with</label><input type="text" name="fusion" class="textbox chartinput" value="' + BattleLog.escapeHTML(set.fusion || '') + '" placeholder="(no fusion)" autocomplete="off" />';
+				buf += '</div>';
+			}
 			var spriteData = Dex.getTeambuilderSpriteData(set, this.curTeam.dex);
 			buf += '<div class="setchart' + (spriteData.pixelated ? ' pixelated' : '') + '" style="' + Dex.getTeambuilderSprite(set, this.curTeam.dex) + ';">';
 
@@ -1553,7 +1570,7 @@
 				}
 				for (var i = 0; i < this.curSetList.length; i++) {
 					var set = this.curSetList[i];
-					var species = dex.species.get(set.species);
+					var species = this.getSetSpecies(set);
 					if (species.isMega) {
 						species = dex.species.get(species.baseSpecies);
 					}
@@ -2353,7 +2370,7 @@
 		updateStatForm: function (setGuessed) {
 			var buf = '';
 			var set = this.curSet;
-			var species = this.curTeam.dex.species.get(this.curSet.species);
+			var species = this.getSetSpecies(this.curSet);
 
 			var baseStats = species.baseStats;
 
@@ -3299,6 +3316,7 @@
 
 		chartTypes: {
 			pokemon: 'pokemon',
+			fusion: 'pokemon',
 			item: 'item',
 			ability: 'ability',
 			move1: 'move',
@@ -3445,6 +3463,7 @@
 			var format = this.curTeam.format;
 			switch (name) {
 			case 'pokemon':
+			case 'fusion':
 				val = (id in BattlePokedex ? this.curTeam.dex.species.get(e.currentTarget.value).name : '');
 				break;
 			case 'ability':
@@ -3587,6 +3606,9 @@
 			switch (inputName) {
 			case 'pokemon':
 				this.setPokemon(val, selectNext);
+				break;
+			case 'fusion':
+				this.setFusion(val, selectNext);
 				break;
 			case 'item':
 				this.curSet.item = val;
@@ -3816,6 +3838,10 @@
 				set.item = '';
 			}
 			set.ability = species.abilities['0'];
+			// PokeRogue Fusion: the ability comes from the second Pokémon
+			if (set.fusion && isFusionFormat(this.curTeam.format)) {
+				set.ability = this.curTeam.dex.species.get(set.fusion).abilities['0'] || set.ability;
+			}
 
 			set.moves = [];
 			set.evs = {};
@@ -3823,6 +3849,37 @@
 			set.nature = '';
 			this.updateSetTop();
 			if (selectNext) this.$(set.item || !this.$('input[name=item]').length ? (this.$('input[name=ability]').length ? 'input[name=ability]' : 'input[name=move1]') : 'input[name=item]').select();
+		},
+
+		/** PokeRogue Fusion: fuse the current set with a second Pokémon (or '' to unfuse) */
+		setFusion: function (val, selectNext) {
+			var set = this.curSet;
+			var dex = this.curTeam.dex;
+			var partner = val ? dex.species.get(val) : null;
+			if (partner && partner.exists) {
+				set.fusion = partner.name;
+			} else {
+				delete set.fusion;
+			}
+			// the ability comes from the second Pokémon (or the first, unfused)
+			var abilities = this.getSetSpecies(set).abilities;
+			var allowed = [];
+			for (var slot in abilities) allowed.push(abilities[slot]);
+			if (allowed.indexOf(set.ability) < 0) set.ability = abilities['0'];
+			if (selectNext) {
+				this.updateSetTop();
+				this.$('input[name=item]').select();
+				return;
+			}
+			// (picked by clicking another box: redraw once that box has the focus, and keep it there)
+			var self = this;
+			setTimeout(function () {
+				if (self.curSet !== set) return;
+				var focused = document.activeElement;
+				var name = focused && focused.name && self.$el.find(focused).length ? focused.name : '';
+				self.updateSetTop();
+				if (name) self.$('[name=' + name + ']').first().focus();
+			}, 0);
 		},
 
 		/*********************************************************
@@ -3850,7 +3907,7 @@
 
 			// do this after setting set.evs because it's assumed to exist
 			// after getStat is run
-			var species = this.curTeam.dex.species.get(set.species);
+			var species = this.getSetSpecies(set);
 			if (!species.exists) return 0;
 
 			if (!set.level) set.level = 100;

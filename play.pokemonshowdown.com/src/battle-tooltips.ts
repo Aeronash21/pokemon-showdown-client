@@ -933,6 +933,12 @@ export class BattleTooltips {
 		if (!illusionIndex || illusionIndex === 1) {
 			text += `<h2>${name}${genderBuf}${illusionIndex ? '' : levelBuf}<br />`;
 
+			// PokeRogue Fusion: the second Pokémon of its fusion
+			const fusion = clientPokemon?.fusion || serverPokemon?.fusion;
+			if (fusion) {
+				text += `<small>(Fused with ${BattleLog.escapeHTML(TL(this.battle.dex.species.get(fusion)))})</small><br />`;
+			}
+
 			if (clientPokemon?.volatiles.formechange) {
 				const forme = TL(this.battle.dex.species.get(clientPokemon.volatiles.formechange[1]));
 				if (clientPokemon.volatiles.transform) {
@@ -2937,7 +2943,10 @@ export class BattleTooltips {
 	}
 	getPokemonTypes(pokemon: Pokemon | ServerPokemon, preterastallized = false): readonly Dex.TypeName[] {
 		if (!(pokemon as Pokemon).getTypes) {
-			return this.battle.dex.species.get(pokemon.speciesForme).types;
+			const species = this.battle.dex.species.get(pokemon.speciesForme);
+			// PokeRogue Fusion
+			const fusion = (pokemon as ServerPokemon).fusion;
+			return fusion ? Dex.getFusedSpecies(species, this.battle.dex.species.get(fusion)).types : species.types;
 		}
 
 		return (pokemon as Pokemon).getTypeList(undefined, preterastallized);
@@ -3029,6 +3038,13 @@ export class BattleTooltips {
 	}
 }
 
+/** PokeRogue Fusion: a set's species, fused with its second Pokémon in that format */
+function setSpecies(dex: ModdedDex | typeof Dex, set: Dex.PokemonSet, formatid: string) {
+	const species = dex.species.get(set.species || set.name!);
+	if (!set.fusion || !formatid.includes('pokeroguefusion')) return species;
+	return Dex.getFusedSpecies(species, dex.species.get(set.fusion));
+}
+
 export class BattleStatGuesser {
 	formatid: ID;
 	dex: ModdedDex;
@@ -3093,7 +3109,7 @@ export class BattleStatGuesser {
 		let item = this.dex.items.get(itemid);
 		let abilityid = toID(set.ability);
 
-		let species = this.dex.species.get(set.species || set.name!);
+		let species = setSpecies(this.dex, set, this.formatid);
 		if (item.megaStone?.[species.name]) species = this.dex.species.get(item.megaStone[species.name]);
 		if (!species.exists) return '?';
 		let stats = species.baseStats;
@@ -3380,7 +3396,7 @@ export class BattleStatGuesser {
 	): Partial<Dex.StatsTable> & { plusStat?: Dex.StatNameExceptHP, minusStat?: Dex.StatNameExceptHP } {
 		if (!set) return {};
 		if (role === '?') return {};
-		let species = this.dex.species.get(set.species || set.name!);
+		let species = setSpecies(this.dex, set, this.formatid);
 		let stats = species.baseStats;
 
 		let hasMove = this.hasMove;
@@ -3613,7 +3629,7 @@ export class BattleStatGuesser {
 	}
 
 	getStat(stat: Dex.StatName, set: Dex.PokemonSet, evOverride?: number, natureOverride?: number) {
-		let species = this.dex.species.get(set.species);
+		let species = setSpecies(this.dex, set, this.formatid);
 		if (!species.exists) return 0;
 
 		let level = set.level || 100;
@@ -3668,7 +3684,7 @@ export function BattleStatOptimizer(set: Dex.PokemonSet, formatid: ID) {
 	const supportsEVs = !formatid.includes('letsgo') && !useStatPoints;
 	if (!(useStatPoints || supportsEVs) || ignoreEVLimits) return null;
 
-	const species = dex.species.get(set.species);
+	const species = setSpecies(dex, set, formatid);
 	const level = set.level || 100;
 	const getStat = (stat: Dex.StatNameExceptHP, ev: number, nature: Dex.Nature, statPoints: boolean) => {
 		const baseStat = species.baseStats[stat];

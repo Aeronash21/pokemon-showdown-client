@@ -905,6 +905,40 @@ export const Dex = new class implements ModdedDex {
 		return false;
 	}
 
+	/**
+	 * PokeRogue Fusion (PokéRogue's DNA Splicers): `first` fused with `second`, as the
+	 * server's 'PokeRogue Fusion Mod' works it out. It keeps the first Pokémon's name and
+	 * forme; its types are the first's primary type, then the second's secondary type (its
+	 * primary type if it has one, or if its secondary matches); each base stat is the
+	 * average of the two, rounded up; its abilities are the second Pokémon's.
+	 */
+	getFusedSpecies(first: Species, second: Species): Species {
+		if (!first.exists || !second.exists) return first;
+		const firstType = first.types[0];
+		let secondType: Dex.TypeName | undefined = first.types[1];
+		const [fusionType1, fusionType2] = second.types;
+		if (fusionType2 && fusionType2 !== firstType) {
+			secondType = fusionType2;
+		} else if (fusionType1 !== firstType) {
+			secondType = fusionType1;
+		}
+		const baseStats = { ...first.baseStats };
+		let bst = 0;
+		for (const stat of Object.keys(baseStats) as (keyof typeof baseStats)[]) {
+			baseStats[stat] = Math.ceil((first.baseStats[stat] + second.baseStats[stat]) / 2);
+			bst += baseStats[stat];
+		}
+		const fused = Object.create(Object.getPrototypeOf(first));
+		Object.assign(fused, first, {
+			types: secondType && secondType !== firstType ? [firstType, secondType] : [firstType],
+			baseStats,
+			bst,
+			abilities: { ...second.abilities },
+			fusion: second.name,
+		});
+		return fused;
+	}
+
 	loadSpriteData(gen: 'xy' | 'bw') {
 		if (this.loadedSpriteData[gen]) return;
 		this.loadedSpriteData[gen] = 1;

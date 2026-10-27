@@ -2370,6 +2370,11 @@ p.or:after {
 
 	box-shadow: inset 1px 1px 0 rgba(255,255,255,.6);
 }
+/* PokeRogue Fusion: the second Pokémon, beside the nickname */
+.setchart-nickname.setchart-fusion {
+	left: 112px;
+	z-index: 1;
+}
 .setchart {
 	border: 1px solid #999999;
 	background: #DAE5F0 no-repeat scroll 10px 5px none;

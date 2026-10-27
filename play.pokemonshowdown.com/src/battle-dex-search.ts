@@ -683,6 +683,11 @@ abstract class BattleTypedSearch<T extends SearchType> {
 	 * Chaos (`chaos`: PokeRogue + Mix and Mega + Shared Power) uses PokeRogue's Pokemon too.
 	 */
 	pokeRogueFormat = '' as ID;
+	/**
+	 * PokeRogue Fusion: the set's second Pokémon. Its moves count too, and the
+	 * fusion's ability is one of its abilities.
+	 */
+	fusion = '' as ID;
 
 	/**
 	 * Cached copy of what the results list would be with only base filters
@@ -841,6 +846,7 @@ abstract class BattleTypedSearch<T extends SearchType> {
 			this.set = speciesOrSet;
 			this.species = toID(this.set.species);
 		}
+		this.fusion = (this.set?.fusion && this.pokeRogueFormat.includes('fusion') ? toID(this.set.fusion) : '') as ID;
 		// if (!searchType || !this.set) return;
 	}
 	getResults(filters?: SearchFilter[] | null, sortCol?: string | null, reverseSort?: boolean): SearchRow[] {
@@ -1025,7 +1031,9 @@ abstract class BattleTypedSearch<T extends SearchType> {
 		const move = this.dex.moves.get(moveid);
 		if (this.formatType === 'pokerogue') {
 			const moves = this.pokeRogueMoves(speciesid);
-			return moves.has(move.id) || (moves.has('sketch' as ID) && this.pokeRogueCanSketch(move));
+			if (moves.has(move.id) || (moves.has('sketch' as ID) && this.pokeRogueCanSketch(move))) return true;
+			// PokeRogue Fusion: the second Pokémon's own moves (not what it could Sketch)
+			return !!this.fusion && speciesid === this.species && this.pokeRogueMoves(this.fusion).has(move.id);
 		}
 		if (this.formatType?.includes('natdex') && move.isNonstandard && move.isNonstandard !== 'Past') {
 			return false;
@@ -1523,7 +1531,12 @@ class BattleAbilitySearch extends BattleTypedSearch<'ability'> {
 			}
 		}
 
-		if (species.isMega) {
+		const fusion = this.fusion ? dex.species.get(this.fusion) : null;
+		if (fusion?.exists) {
+			// PokeRogue Fusion: the ability comes from the second Pokémon (Mega Evolving keeps it)
+			abilitySet.push(['html', `Fused with ${fusion.name.replace(/[<>&"]/g, '')}: its abilities.`]);
+			species = fusion;
+		} else if (species.isMega) {
 			abilitySet.unshift(['html', `Will be <strong>${species.abilities['0']}</strong> after Mega Evolving.`]);
 			species = dex.species.get(species.baseSpecies);
 		}
@@ -2004,6 +2017,10 @@ class BattleMoveSearch extends BattleTypedSearch<'move'> {
 		const eggMoves = this.pokeRogueEggMoves(species.id).filter(id => learnable.has(id));
 		// (Array.from: Babel compiles spreads in loose mode, which only works on arrays)
 		const moves = Array.from(learnable).filter(id => !eggMoves.includes(id)).sort();
+		// PokeRogue Fusion: the second Pokémon's moves that the first doesn't have
+		const fusion = this.fusion ? this.dex.species.get(this.fusion) : null;
+		const fusionMoves = fusion?.exists ?
+			Array.from(this.pokeRogueMoves(fusion.id)).filter(id => !learnable.has(id)).sort() : [];
 		const sketchMoves: ID[] = [];
 		if (learnable.has('sketch' as ID)) {
 			for (const id in BattleMovedex) {
@@ -2012,7 +2029,7 @@ class BattleMoveSearch extends BattleTypedSearch<'move'> {
 			}
 			sketchMoves.sort();
 		}
-		const allMoves = [...eggMoves, ...moves, ...sketchMoves];
+		const allMoves = [...eggMoves, ...moves, ...fusionMoves, ...sketchMoves];
 
 		const results: SearchRow[] = [];
 		if (eggMoves.length) {
@@ -2028,8 +2045,11 @@ class BattleMoveSearch extends BattleTypedSearch<'move'> {
 		}
 		const usableMoves: SearchRow[] = [];
 		const uselessMoves: SearchRow[] = [];
+		const fusionName = fusion?.name.replace(/[<>&"]/g, '') || '';
 		for (const [list, usableHeader, uselessHeader] of [
-			[moves, TL`Moves`, TL`Usually useless moves`], [sketchMoves, TL`Sketched moves`, TL`Useless sketched moves`],
+			[moves, TL`Moves`, TL`Usually useless moves`],
+			[fusionMoves, `Moves from ${fusionName}`, `Usually useless moves from ${fusionName}`],
+			[sketchMoves, TL`Sketched moves`, TL`Useless sketched moves`],
 		] as const) {
 			let addedUsable = false;
 			let addedUseless = false;

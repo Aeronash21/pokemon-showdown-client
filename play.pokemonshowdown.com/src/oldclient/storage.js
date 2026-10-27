@@ -1013,14 +1013,16 @@ Storage.packTeam = function (team) {
 			buf += '|';
 		}
 
-		if (set.pokeball || (set.hpType && !hasHP) || set.gigantamax || (set.dynamaxLevel !== undefined && set.dynamaxLevel !== 10) || set.teraType || set.passive === false) {
+		if (set.pokeball || (set.hpType && !hasHP) || set.gigantamax || (set.dynamaxLevel !== undefined && set.dynamaxLevel !== 10) || set.teraType || set.passive === false || set.fusion) {
 			buf += ',' + (set.hpType || '');
 			buf += ',' + toID(set.pokeball);
 			buf += ',' + (set.gigantamax ? 'G' : '');
 			buf += ',' + (set.dynamaxLevel !== undefined && set.dynamaxLevel !== 10 ? set.dynamaxLevel : '');
 			buf += ',' + (set.teraType || '');
 			// PokeRogue formats: passive ability switched off
-			if (set.passive === false) buf += ',off';
+			if (set.passive === false || set.fusion) buf += ',' + (set.passive === false ? 'off' : '');
+			// PokeRogue Fusion: the second Pokémon
+			if (set.fusion) buf += ',' + toID(set.fusion);
 		}
 	}
 
@@ -1134,9 +1136,9 @@ Storage.fastUnpackTeam = function (buf) {
 		j = buf.indexOf(']', i);
 		var misc = undefined;
 		if (j < 0) {
-			if (i < buf.length) misc = buf.substring(i).split(',', 7);
+			if (i < buf.length) misc = buf.substring(i).split(',', 8);
 		} else {
-			if (i !== j) misc = buf.substring(i, j).split(',', 7);
+			if (i !== j) misc = buf.substring(i, j).split(',', 8);
 		}
 		if (misc) {
 			set.happiness = (misc[0] ? Number(misc[0]) : 255);
@@ -1146,6 +1148,7 @@ Storage.fastUnpackTeam = function (buf) {
 			set.dynamaxLevel = (misc[4] ? Number(misc[4]) : 10);
 			set.teraType = misc[5];
 			if (misc[6] === 'off') set.passive = false;
+			if (misc[7]) set.fusion = Dex.species.get(misc[7]).name || misc[7];
 		}
 		if (j < 0) break;
 		i = j + 1;
@@ -1262,9 +1265,9 @@ Storage.unpackTeam = function (buf) {
 		j = buf.indexOf(']', i);
 		var misc = undefined;
 		if (j < 0) {
-			if (i < buf.length) misc = buf.substring(i).split(',', 7);
+			if (i < buf.length) misc = buf.substring(i).split(',', 8);
 		} else {
-			if (i !== j) misc = buf.substring(i, j).split(',', 7);
+			if (i !== j) misc = buf.substring(i, j).split(',', 8);
 		}
 		if (misc) {
 			set.happiness = (misc[0] ? Number(misc[0]) : 255);
@@ -1274,6 +1277,7 @@ Storage.unpackTeam = function (buf) {
 			set.dynamaxLevel = (misc[4] ? Number(misc[4]) : 10);
 			set.teraType = misc[5];
 			if (misc[6] === 'off') set.passive = false;
+			if (misc[7]) set.fusion = Dex.species.get(misc[7]).name || misc[7];
 		}
 		if (j < 0 || buf.indexOf('|', j) < 0) break;
 		i = j + 1;
@@ -1467,6 +1471,9 @@ Storage.importTeam = function (buffer, teams) {
 			curSet.gigantamax = true;
 		} else if (line.substr(0, 9) === 'Passive: ') {
 			if (/^(off|no|false|disabled)$/i.test(line.substr(9).trim())) curSet.passive = false;
+		} else if (line.substr(0, 8) === 'Fusion: ') {
+			var fusion = Dex.species.get(line.substr(8).trim());
+			if (fusion.exists) curSet.fusion = fusion.name;
 		} else if (line.substr(0, 5) === 'EVs: ') {
 			line = line.substr(5);
 			var evLines = line.split('/');
@@ -1597,6 +1604,9 @@ Storage.exportTeam = function (team, hidestats) {
 		}
 		if (curSet.passive === false) {
 			text += 'Passive: Off  \n';
+		}
+		if (curSet.fusion) {
+			text += 'Fusion: ' + curSet.fusion + '  \n';
 		}
 		if (!hidestats) {
 			var first = true;
