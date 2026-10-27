@@ -32,3 +32,10 @@ base added on the near side), and everything was upscaled with nearest-neighbour
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) (non-commercial use, share
 alike), and these edited versions are shared under the same licence. The PokéRogue logo is not
 used anywhere here: Pagefault Games doesn't allow it to be reused.
+
+## Logo
+
+- `logo/pokemonshowdownbeta.png` and `@2x.png`: Showdown's own "Pokémon Showdown! BETA" header logo
+  (`play.pokemonshowdown.com/pokemonshowdownbeta*.png`) recoloured by `build-tools/build-pokerogue-logo.py`
+  to the four colours of PokéRogue's logo: its blues for the letters, its red for the outline and its
+  maroon for the BETA badge. PokéRogue's logo itself isn't used (Pagefault Games doesn't allow it).
