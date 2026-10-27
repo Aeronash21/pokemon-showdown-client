@@ -2658,6 +2658,19 @@ export class Battle {
 			let ofpoke = this.getPokemon(kwArgs.of);
 			let fromeffect = Dex.getEffect(kwArgs.from);
 
+			// PokeRogue Fusion: when a fused Pokémon comes in, the server tells everyone its
+			// real types; that's just its fused typing (worked out here), not a type change
+			if (
+				effect.id === 'typechange' && kwArgs.silent && !fromeffect.id && poke.fusion && !poke.terastallized &&
+				Dex.sanitizeName(args[3] || '') === poke.getSpecies().types.join('/')
+			) {
+				poke.removeVolatile('typechange' as ID);
+				poke.removeVolatile('typeadd' as ID);
+				this.scene.updateStatbar(poke);
+				this.log(args, kwArgs);
+				break;
+			}
+
 			this.activateAbility(poke, effect);
 			this.activateAbility(ofpoke || poke, fromeffect);
 			switch (effect.id) {

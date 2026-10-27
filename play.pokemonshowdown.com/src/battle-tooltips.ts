@@ -2979,7 +2979,9 @@ export class BattleTooltips {
 				}
 			} else {
 				const speciesForme = clientPokemon.getSpeciesForme() || serverPokemon?.speciesForme || '';
-				const species = this.battle.dex.species.get(speciesForme);
+				// (PokeRogue Fusion: a fused Pokémon has one of its second Pokémon's abilities)
+				const species = clientPokemon.fusion || serverPokemon?.fusion || clientPokemon.volatiles.transform ?
+					clientPokemon.getSpecies(serverPokemon || undefined) : this.battle.dex.species.get(speciesForme);
 				if (species.exists && species.abilities) {
 					abilityData.possibilities = Object.values(species.abilities);
 					if (this.battle.rules['Frantic Fusions Mod']) {
