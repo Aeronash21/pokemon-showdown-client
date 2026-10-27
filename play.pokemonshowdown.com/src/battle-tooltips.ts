@@ -3044,7 +3044,7 @@ export class BattleTooltips {
 function setSpecies(dex: ModdedDex | typeof Dex, set: Dex.PokemonSet, formatid: string) {
 	const species = dex.species.get(set.species || set.name!);
 	if (!set.fusion || !formatid.includes('pokeroguefusion')) return species;
-	return Dex.getFusedSpecies(species, dex.species.get(set.fusion));
+	return Dex.getFusedSpecies(species, dex.species.get(set.fusion), set.ability);
 }
 
 export class BattleStatGuesser {
@@ -3647,7 +3647,8 @@ export class BattleStatGuesser {
 		if (evOverride !== undefined) ev = evOverride;
 
 		if (stat === 'hp') {
-			if (baseStat === 1) return 1;
+			// (PokeRogue Fusion: a fusion with Wonder Guard has 1 HP)
+			if (baseStat === 1 || (species as any).maxHP === 1) return 1;
 			if (this.useStatPoints) return baseStat + ev + 75;
 			if (this.supportsAVs) return ~~(~~(2 * baseStat + iv + 100) * level / 100 + 10) + (ev || 0);
 			return ~~(~~(2 * baseStat + iv + ~~(ev / 4) + 100) * level / 100 + 10);

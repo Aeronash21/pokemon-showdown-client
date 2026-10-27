@@ -1324,7 +1324,7 @@
 			var dex = this.curTeam.dex;
 			var species = dex.species.get(set.species);
 			if (!set.fusion || !isFusionFormat(this.curTeam.format)) return species;
-			return Dex.getFusedSpecies(species, dex.species.get(set.fusion));
+			return Dex.getFusedSpecies(species, dex.species.get(set.fusion), set.ability);
 		},
 		renderSet: function (set, i) {
 			var baseFormat = this.curTeam.format;
@@ -3921,7 +3921,8 @@
 			if (ev === undefined) ev = (this.curTeam.gen > 2 ? 0 : 252);
 
 			if (stat === 'hp') {
-				if (baseStat === 1) return 1;
+				// (PokeRogue Fusion: a fusion with Wonder Guard has 1 HP)
+				if (baseStat === 1 || species.maxHP === 1) return 1;
 				if (usesStatPoints) return baseStat + ev + 75;
 				if (!supportsEVs) return Math.floor(Math.floor(2 * baseStat + iv + 100) * set.level / 100 + 10) + (supportsAVs ? ev : 0);
 				return Math.floor(Math.floor(2 * baseStat + iv + Math.floor(ev / 4) + 100) * set.level / 100 + 10);

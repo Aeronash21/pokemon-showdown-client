@@ -1032,8 +1032,10 @@ abstract class BattleTypedSearch<T extends SearchType> {
 		if (this.formatType === 'pokerogue') {
 			const moves = this.pokeRogueMoves(speciesid);
 			if (moves.has(move.id) || (moves.has('sketch' as ID) && this.pokeRogueCanSketch(move))) return true;
-			// PokeRogue Fusion: the second Pokémon's own moves (not what it could Sketch)
-			return !!this.fusion && speciesid === this.species && this.pokeRogueMoves(this.fusion).has(move.id);
+			// PokeRogue Fusion: the second Pokémon's moves too (with Sketch, any move it could Sketch)
+			if (!this.fusion || speciesid !== this.species) return false;
+			const partnerMoves = this.pokeRogueMoves(this.fusion);
+			return partnerMoves.has(move.id) || (partnerMoves.has('sketch' as ID) && this.pokeRogueCanSketch(move));
 		}
 		if (this.formatType?.includes('natdex') && move.isNonstandard && move.isNonstandard !== 'Past') {
 			return false;
@@ -2019,13 +2021,15 @@ class BattleMoveSearch extends BattleTypedSearch<'move'> {
 		const moves = Array.from(learnable).filter(id => !eggMoves.includes(id)).sort();
 		// PokeRogue Fusion: the second Pokémon's moves that the first doesn't have
 		const fusion = this.fusion ? this.dex.species.get(this.fusion) : null;
-		const fusionMoves = fusion?.exists ?
-			Array.from(this.pokeRogueMoves(fusion.id)).filter(id => !learnable.has(id)).sort() : [];
+		const fusionLearnable = fusion?.exists ? this.pokeRogueMoves(fusion.id) : null;
+		const fusionMoves = fusionLearnable ? Array.from(fusionLearnable).filter(id => !learnable.has(id)).sort() : [];
 		const sketchMoves: ID[] = [];
-		if (learnable.has('sketch' as ID)) {
+		// (a fusion can Sketch when either half learns Sketch)
+		if (learnable.has('sketch' as ID) || fusionLearnable?.has('sketch' as ID)) {
 			for (const id in BattleMovedex) {
 				const move = this.dex.moves.get(id);
-				if (!learnable.has(move.id) && this.pokeRogueCanSketch(move)) sketchMoves.push(move.id);
+				if (learnable.has(move.id) || fusionLearnable?.has(move.id)) continue;
+				if (this.pokeRogueCanSketch(move)) sketchMoves.push(move.id);
 			}
 			sketchMoves.sort();
 		}

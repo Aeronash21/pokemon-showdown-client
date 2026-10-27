@@ -910,9 +910,10 @@ export const Dex = new class implements ModdedDex {
 	 * server's 'PokeRogue Fusion Mod' works it out. It keeps the first Pokémon's name and
 	 * forme; its types are the first's primary type, then the second's secondary type (its
 	 * primary type if it has one, or if its secondary matches); each base stat is the
-	 * average of the two, rounded up; its abilities are the second Pokémon's.
+	 * average of the two, rounded up; its abilities are the second Pokémon's. With Wonder
+	 * Guard (`ability`, when known) it has 1 HP, as in PokéRogue.
 	 */
-	getFusedSpecies(first: Species, second: Species): Species {
+	getFusedSpecies(first: Species, second: Species, ability?: string): Species {
 		if (!first.exists || !second.exists) return first;
 		const firstType = first.types[0];
 		let secondType: Dex.TypeName | undefined = first.types[1];
@@ -935,6 +936,7 @@ export const Dex = new class implements ModdedDex {
 			bst,
 			abilities: { ...second.abilities },
 			fusion: second.name,
+			maxHP: ability && toID(ability) === 'wonderguard' ? 1 : undefined,
 		});
 		return fused;
 	}
