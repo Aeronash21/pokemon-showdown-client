@@ -1353,8 +1353,8 @@
 			buf += '</div>';
 			// PokeRogue Fusion: the second Pokémon (DNA Splicers)
 			if (isFusionFormat(baseFormat)) {
-				buf += '<div class="setchart-nickname setchart-fusion" title="The second Pok&eacute;mon of the fusion: its secondary type and ability, the average of both base stats, and either one\'s moves">';
-				buf += '<label>Fused with</label><input type="text" name="fusion" class="textbox chartinput" value="' + BattleLog.escapeHTML(set.fusion || '') + '" placeholder="(no fusion)" autocomplete="off" />';
+				buf += '<div class="setchart-nickname setchart-fusion" title="The second Pok&eacute;mon of the fusion (required; not the same Pok&eacute;mon): its secondary type and ability, the average of both base stats, and either one\'s moves">';
+				buf += '<label>Fused with</label><input type="text" name="fusion" class="textbox chartinput" value="' + BattleLog.escapeHTML(set.fusion || '') + '" placeholder="(required)" autocomplete="off" />';
 				buf += '</div>';
 			}
 			var spriteData = Dex.getTeambuilderSpriteData(set, this.curTeam.dex);
