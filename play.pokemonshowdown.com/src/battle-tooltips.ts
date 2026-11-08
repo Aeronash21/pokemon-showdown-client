@@ -756,6 +756,9 @@ export class BattleTooltips {
 					called = this.battle.dex.moves.get('Moonblast');
 				} else if (this.battle.hasPseudoWeather('Psychic Terrain')) {
 					called = this.battle.dex.moves.get('Psychic');
+				} else if (this.battle.biomeNaturePower) {
+					// PokéRogue formats: the battle's biome decides it
+					called = this.battle.dex.moves.get(this.battle.biomeNaturePower);
 				} else {
 					called = this.battle.dex.moves.get('Tri Attack');
 				}
@@ -2238,16 +2241,23 @@ export class BattleTooltips {
 			if (move.id === 'sheercold' && this.battle.gen >= 7 && !this.pokemonHasType(pokemon, 'Ice')) {
 				value.set(20, 'not Ice-type');
 			}
+			// PokéRogue formats: + 100 x (1 - target's level / user's level)
+			const pokeRogue = /PokeRogue|Chaos/.test(this.battle.tier);
 			if (target) {
 				if (pokemon.level < target.level) {
 					value.reset(0);
 					value.set(0, "FAILS: target's level is higher");
+				} else if (pokemon.level > target.level && pokeRogue) {
+					const bonus = 100 * (1 - target.level / pokemon.level);
+					value.set(Math.min(value.value + bonus, 100), "higher level than the target");
 				} else if (pokemon.level > target.level) {
 					value.set(value.value + pokemon.level - target.level, "+1% per level above target");
 				}
 			} else {
 				if (pokemon.level < 100) value.set(value.value, "fails if target's level is higher");
-				if (pokemon.level > 1) value.set(value.value, "+1% per level above target");
+				if (pokemon.level > 1) {
+					value.set(value.value, pokeRogue ? "more if the target's level is lower" : "+1% per level above target");
+				}
 			}
 			return value;
 		}
@@ -2365,8 +2375,15 @@ export class BattleTooltips {
 		value.reset(move.basePower);
 
 		if (move.id === 'acrobatics') {
-			if (!serverPokemon.item) {
+			const item = this.battle.dex.items.get(serverPokemon.item);
+			// PokéRogue formats: 110 power with no item it could lose (a Mega Stone
+			// for itself doesn't count), 99 with one
+			const pokeRogue = /PokeRogue|Chaos/.test(this.battle.tier);
+			if (!serverPokemon.item || (pokeRogue && item.megaStone &&
+				Object.keys(item.megaStone).includes(this.battle.dex.species.get(serverPokemon.speciesForme).baseSpecies))) {
 				value.modify(2, "Acrobatics + no item");
+			} else if (pokeRogue) {
+				value.modify(1.8, "Acrobatics + item (PokéRogue)");
 			}
 		}
 		let variableBPCap = ['crushgrip', 'wringout'].includes(move.id) ? 120 : move.id === 'hardpress' ? 100 : undefined;

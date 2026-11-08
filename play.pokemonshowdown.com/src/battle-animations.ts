@@ -601,8 +601,11 @@ export class BattleScene implements BattleSceneStub {
 			bg = 'fx/bg-scl.png';
 			this.setBgm(-101);
 		} else if (this.battle.gen >= 6 && Dex.customPrefix) {
-			// a PokéRogue biome (with the BW sprites too, which suit its pixel art)
-			bg = `${Dex.customPrefix}arenas/${PokeRogueArenas[this.numericId % PokeRogueArenas.length]}.png`;
+			// a PokéRogue biome (with the BW sprites too, which suit its pixel art): the
+			// one the server picked in PokéRogue formats (Nature Power etc. depend on it)
+			const biome = PokeRogueArenas.includes(this.battle.biome) ? this.battle.biome :
+				PokeRogueArenas[this.numericId % PokeRogueArenas.length];
+			bg = `${Dex.customPrefix}arenas/${biome}.png`;
 		} else {
 			if (gen <= 1) bg = 'fx/bg-gen1.png?';
 			else if (gen <= 2) bg = 'fx/bg-gen2.png?';

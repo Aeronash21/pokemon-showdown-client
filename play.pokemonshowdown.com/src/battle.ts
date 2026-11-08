@@ -1166,6 +1166,10 @@ export class Battle {
 	compatMode = true;
 	rated: string | boolean = false;
 	rules: { [ruleName: string]: 1 | undefined } = {};
+	/** The PokéRogue biome the server picked (its "Biome: ..." rule), for the background */
+	biome = '' as ID;
+	/** ...and the move Nature Power becomes there (with no terrain) */
+	biomeNaturePower = '';
 	isBlitz = false;
 	reportExactHP = false;
 	hpPercentageMod = false;
@@ -3619,6 +3623,12 @@ export class Battle {
 			}
 			if (ruleName === 'Exact HP Mod') this.reportExactHP = true;
 			if (ruleName === 'HP Percentage Mod') this.hpPercentageMod = true;
+			// PokéRogue formats: "Biome: Ice Cave - Nature Power becomes ..."
+			if (ruleName === 'Biome') {
+				this.biome = toID(args[1].slice(ruleName.length + 2).split(' - ')[0]);
+				this.biomeNaturePower = /Nature Power becomes ([^,]+),/.exec(args[1])?.[1] || '';
+				this.scene.updateGen();
+			}
 			this.rules[ruleName] = 1;
 			this.log(args);
 			break;
